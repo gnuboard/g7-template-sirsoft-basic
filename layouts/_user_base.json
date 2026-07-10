@@ -812,19 +812,75 @@
                             },
                             "children": [
                                 {
-                                    "comment": "언어 선택 (여러 언어 지원 시)",
+                                    "comment": "언어 선택 (여러 언어 지원 시). 접기/펼치기 — 접힘이 기본이고 트리거에 현재 언어를 요약 표기한다. 통화/배송국가(이커머스 주입 슬롯)와는 독립된 토글(_global.mobileLanguageOpen)이라 서로 영향 없음.",
+                                    "id": "mobile_drawer_language",
                                     "type": "basic",
                                     "name": "Div",
                                     "if": "{{$locales.length > 1}}",
                                     "children": [
                                         {
+                                            "comment": "트리거 — 좌측 '언어' 라벨, 우측 현재 언어명 + chevron. 접힘 상태에서 현재 값을 알 수 있어야 하므로 요약을 항상 노출한다.",
+                                            "id": "mobile_drawer_language_toggle",
+                                            "type": "basic",
+                                            "name": "Button",
+                                            "props": {
+                                                "type": "button",
+                                                "className": "w-full flex items-center justify-between py-1 cursor-pointer",
+                                                "aria-expanded": "{{_global.mobileLanguageOpen ?? false}}"
+                                            },
+                                            "actions": [
+                                                {
+                                                    "type": "click",
+                                                    "handler": "setState",
+                                                    "params": {
+                                                        "target": "global",
+                                                        "mobileLanguageOpen": "{{!_global.mobileLanguageOpen}}"
+                                                    }
+                                                }
+                                            ],
+                                            "children": [
+                                                {
+                                                    "type": "basic",
+                                                    "name": "Span",
+                                                    "props": {
+                                                        "className": "text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"
+                                                    },
+                                                    "text": "$t:common.language"
+                                                },
+                                                {
+                                                    "type": "basic",
+                                                    "name": "Span",
+                                                    "props": {
+                                                        "className": "flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300"
+                                                    },
+                                                    "children": [
+                                                        {
+                                                            "comment": "접힘 상태 요약 = 현재 언어명",
+                                                            "type": "basic",
+                                                            "name": "Span",
+                                                            "props": { "className": "font-medium" },
+                                                            "text": "{{_global.appConfig?.localeNames?.[$locale] ?? $locale}}"
+                                                        },
+                                                        {
+                                                            "type": "basic",
+                                                            "name": "Icon",
+                                                            "props": {
+                                                                "name": "chevron-down",
+                                                                "className": "{{_global.mobileLanguageOpen ? 'rotate-180' : ''}} text-xs text-gray-400 dark:text-gray-500 transition-transform duration-200"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "comment": "펼침 영역 — 사용자 정보 아코디언과 동일한 max-h/opacity 트랜지션. overflow-hidden 이라 접힘 시 칩이 잘려 사라진다.",
                                             "type": "basic",
                                             "name": "Div",
                                             "props": {
-                                                "className": "py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"
+                                                "className": "overflow-hidden transition-all duration-300 ease-in-out {{_global.mobileLanguageOpen ? 'max-h-screen opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'}}"
                                             },
-                                            "text": "$t:common.language"
-                                        },
+                                            "children": [
                                         {
                                             "comment": "가로 나열 칩. iteration 은 반드시 Button 자신에 건다 — 엔진은 iteration 을 가진 노드를 항목 수만큼 복제하므로, flex 컨테이너에 걸면 컨테이너가 복제되어 칩이 세로로 쌓인다.",
                                             "type": "basic",
@@ -851,6 +907,8 @@
                                                         { "type": "basic", "name": "Span", "text": "{{_global.appConfig?.localeNames?.[loc] ?? loc}}" }
                                                     ]
                                                 }
+                                            ]
+                                        }
                                             ]
                                         }
                                     ]

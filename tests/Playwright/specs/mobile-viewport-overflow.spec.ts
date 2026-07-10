@@ -10,8 +10,13 @@
  *
  * 조치:
  * - 언어/통화를 모바일 드로어(mobile_drawer_prefs)로 이동, 가로 칩으로 나열
- * - 통화/배송국가 주입 조각은 responsive.portable 로 모바일에서만 펼친 칩 목록
+ * - 통화/배송국가 주입 조각은 responsive.portable 로 모바일에서만 static 인라인 목록
  * - 데스크톱(≥1024px)은 기존 헤더 드롭다운 유지
+ *
+ * 후속 (드로어 세로 길이):
+ * - 언어 / 통화·배송국가를 각각 독립 아코디언으로 접는다(기본 접힘). 접힘 상태에서도
+ *   트리거에 현재값(언어명 / 통화·배송국가)을 요약 표기해 펼치지 않고 알 수 있게 한다.
+ * - 언어=템플릿 소유(_global.mobileLanguageOpen), 통화=주입 조각 소유(_local.showCurrencyDropdown).
  *
  * 단위 테스트(Vitest)는 레이아웃 JSON 구조만 본다. 실제 브라우저 폭·줄 수·가시성은
  * 여기서만 검증된다 (위지윅 발행 회귀 #238 교훈).
@@ -86,7 +91,11 @@ test.describe('모바일 헤더/드로어 (390px)', () => {
     await expect(page.locator('#mobile_header_right #mobile_currency_selector_wrap')).toHaveCount(0);
   });
 
-  test('언어/통화는 드로어 안에 가로 칩으로 나열되고 비회원도 볼 수 있다', async ({ page }) => {
+  /**
+   * 드로어 선호설정은 언어 / 통화·배송국가 두 개의 독립 아코디언이며 기본은 접힘이다.
+   * 전부 펼쳐 두면 드로어가 세로로 길어져 정작 메뉴가 스크롤 밖으로 밀린다.
+   */
+  test('드로어 선호설정은 기본 접힘이고 트리거에 현재값을 요약 표기한다 (비회원 포함)', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.locator('#mobile_menu_toggle').click();
@@ -94,16 +103,54 @@ test.describe('모바일 헤더/드로어 (390px)', () => {
     const prefs = page.locator('#mobile_drawer_prefs');
     await expect(prefs).toBeVisible();
 
-    // 언어 칩: 여러 로케일이 한 줄에 나열 (iteration 이 Button 에 걸려 있어야 함)
+    // 언어: 접힘 (트리거 aria-expanded=false, 잘림 래퍼 높이 0)
+    const langToggle = page.locator('#mobile_drawer_language_toggle');
+    await expect(langToggle).toHaveAttribute('aria-expanded', 'false');
+    const langBodyHeight = await page.evaluate(() => {
+      const body = document
+        .querySelector('#mobile_drawer_language_toggle')
+        ?.parentElement?.querySelector('.overflow-hidden');
+      return body ? Math.round(body.getBoundingClientRect().height) : -1;
+    });
+    expect(langBodyHeight).toBe(0);
+
+    // 접힘 상태 요약 = 현재 선택된 언어 칩의 이름 (세션 로케일 무관)
+    const summary = await page.evaluate(() => {
+      const toggle = document.querySelector('#mobile_drawer_language_toggle');
+      const selected = document.querySelector('#mobile_drawer_language [role="option"][aria-selected="true"]');
+      if (!toggle || !selected) return null;
+      return { toggleText: (toggle.textContent ?? '').trim(), chipName: (selected.textContent ?? '').trim() };
+    });
+    expect(summary).not.toBeNull();
+    expect(summary!.toggleText).toContain(summary!.chipName);
+
+    // 통화 슬롯: 이커머스 모듈 주입 + id 스코프. 접힘 → 트리거는 보이고 패널은 언마운트.
+    const currencyRoot = page.locator('#mobile_drawer_currency_wrap [id^="ext_header_currency_selector"]');
+    await expect(currencyRoot).toBeVisible();
+    const trigger = currencyRoot.locator('button[aria-haspopup="listbox"]');
+    await expect(trigger).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(currencyRoot.locator('[role="listbox"]')).toHaveCount(0);
+
+    expect(await docOverflow(page)).toBe(0);
+  });
+
+  test('아코디언을 펼치면 언어/통화 칩이 가로로 나열되고 뷰포트를 넘지 않는다', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.locator('#mobile_menu_toggle').click();
+
+    const prefs = page.locator('#mobile_drawer_prefs');
+    await expect(prefs).toBeVisible();
+
+    // 언어 펼치기 — iteration 이 Button 에 걸려 있어야 칩이 가로로 나열된다
+    await page.locator('#mobile_drawer_language_toggle').click();
     const langChips = prefs.locator('button[role="option"]:not(#mobile_drawer_currency_wrap button)');
     expect(await langChips.count()).toBeGreaterThan(0);
 
-    // 통화 슬롯: 이커머스 모듈 주입 + id 스코프
+    // 통화 펼치기 — portable 에서는 absolute 팝오버가 아니라 static 인라인 목록
     const currencyRoot = page.locator('#mobile_drawer_currency_wrap [id^="ext_header_currency_selector"]');
-    await expect(currencyRoot).toBeVisible();
-
-    // portable 오버라이드 — 트리거는 숨고 패널은 펼쳐진 정적 목록
-    await expect(currencyRoot.locator('button[aria-haspopup="listbox"]')).toBeHidden();
+    await currencyRoot.locator('button[aria-haspopup="listbox"]').click();
     const panel = currencyRoot.locator('[role="listbox"]');
     await expect(panel).toBeVisible();
     await expect(panel).toHaveClass(/\bstatic\b/);
@@ -115,7 +162,36 @@ test.describe('모바일 헤더/드로어 (390px)', () => {
     for (let i = 0; i < n; i += 1) {
       await expect(chips.nth(i)).toHaveClass(/rounded-full/);
     }
+
+    // 드로어 안 인라인 아코디언이라 배경 오버레이(fixed inset-0)는 렌더되지 않는다.
+    // 렌더되면 드로어 전체 클릭을 가로챈다.
+    const backdrops = await page.evaluate(
+      () => document.querySelectorAll('#mobile_drawer_prefs .fixed.inset-0').length,
+    );
+    expect(backdrops).toBe(0);
+
     expect(await docOverflow(page)).toBe(0);
+  });
+
+  test('언어와 통화 아코디언은 독립적으로 개폐된다', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.locator('#mobile_menu_toggle').click();
+
+    const langToggle = page.locator('#mobile_drawer_language_toggle');
+    const currencyRoot = page.locator('#mobile_drawer_currency_wrap [id^="ext_header_currency_selector"]');
+    const trigger = currencyRoot.locator('button[aria-haspopup="listbox"]');
+
+    await langToggle.click();
+    await trigger.click();
+    await expect(langToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    // 언어만 닫는다 → 통화는 열린 채 유지
+    await langToggle.click();
+    await expect(langToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(currencyRoot.locator('[role="listbox"]')).toHaveCount(1);
   });
 
   test('320px 에서도 햄버거 버튼을 누를 수 있다 (내비게이션 접근성)', async ({ page }) => {
