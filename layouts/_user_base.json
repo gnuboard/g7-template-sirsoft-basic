@@ -85,11 +85,11 @@
             }
         },
         {
-            "_comment": "헤더 배송국가 셀렉터 목록 주입 (MP08 후속). 활성 국가만 {code, name(현지화), flag_class(fi fi-xx)} 형태로. 해외배송 OFF 시 KR 만 활성이라 셀렉터 자연 숨김(2개↑ 게이트).",
+            "_comment": "헤더 배송국가 셀렉터 목록 주입 (MP08 후속). 활성 국가만 {code, name(현지화), flag_class(fi fi-xx)} 형태로. 해외배송 OFF 시 KR 만 활성이라 셀렉터 자연 숨김(2개↑ 게이트). 국가명 $localized(name, fallbackKey): 활성 로케일 키는 서버(localize_catalog_field)가 settings.countries.{code}.name 으로 미리 보강해 통상 즉시 hit 한다. fallbackKey 와 || c.code 는 보강이 실패한 경우의 방어선.",
             "handler": "setState",
             "params": {
                 "target": "global",
-                "availableShippingCountries": "{{(_global.modules?.['sirsoft-ecommerce']?.shipping?.available_countries ?? []).filter(c => c.is_active).map(c => ({ code: c.code, name: (c.name?.[_global.locale] ?? c.name?.ko ?? c.code), flag_class: ('fi fi-' + (c.code ?? '').toLowerCase()) }))}}"
+                "availableShippingCountries": "{{(_global.modules?.['sirsoft-ecommerce']?.shipping?.available_countries ?? []).filter(c => c.is_active).map(c => ({ code: c.code, name: ($localized(c.name, 'sirsoft-ecommerce::settings.countries.' + (c.code ?? '') + '.name') || c.code), flag_class: ('fi fi-' + (c.code ?? '').toLowerCase()) }))}}"
             }
         },
         {
