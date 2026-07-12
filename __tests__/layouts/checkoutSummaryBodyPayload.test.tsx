@@ -18,6 +18,7 @@
 import { describe, it, expect } from 'vitest';
 import { DataBindingEngine } from '@core/template-engine/DataBindingEngine';
 import checkoutSummaryJson from '../../layouts/partials/shop/_checkout_summary.json';
+import checkoutJson from '../../layouts/shop/checkout.json';
 
 /** 객체 트리에서 조건을 만족하는 첫 노드를 깊이우선 탐색 */
 function findNode(node: any, predicate: (n: any) => boolean): any {
@@ -62,12 +63,12 @@ function expectedLegacy(ctx: any): Record<string, any> {
     temp_order_id: checkoutData?.data?.temp_order_id,
     orderer: _computed?.ordererDefaults,
     shipping: _local?.shipping,
-    payment_method: _computed?.selectedPaymentMethod,
+    payment_method: _computed?.selectedCorePaymentMethod,
     shipping_memo:
       _local?.shippingMemo === 'custom' ? _local?.shippingMemoCustom : _local?.shippingMemo,
     depositor_name: _local?.depositorName ?? _computed?.ordererDefaults?.name ?? '',
     dbank:
-      _computed?.selectedPaymentMethod === 'dbank'
+      _computed?.selectedCorePaymentMethod === 'dbank'
         ? {
             bank_code: _local?.selectedDbank?.bank_code,
             account_number: _local?.selectedDbank?.account_number,
@@ -102,6 +103,7 @@ const baseCtx = (over: Record<string, any> = {}) => ({
   _computed: {
     ordererDefaults: { name: '홍길동', phone: '01012345678', email: 'a@b.c' },
     selectedPaymentMethod: 'dbank',
+    selectedCorePaymentMethod: 'dbank',
   },
   _local: {
     shipping: { recipient_name: '홍길동' },
@@ -135,6 +137,7 @@ describe('주문 생성 body — 확장 병합 칸 계약', () => {
           _computed: {
             ordererDefaults: { name: '김철수', phone: '', email: '' },
             selectedPaymentMethod: 'card',
+            selectedCorePaymentMethod: 'card',
           },
           _global: { currentUser: { uuid: 'user-uuid-1' } },
         }),
@@ -151,7 +154,7 @@ describe('주문 생성 body — 확장 병합 칸 계약', () => {
         '초기 진입 (빈 _local · calculation 없음)',
         {
           checkoutData: { data: { temp_order_id: null, calculation: null } },
-          _computed: { ordererDefaults: undefined, selectedPaymentMethod: 'vbank' },
+          _computed: { ordererDefaults: undefined, selectedPaymentMethod: 'vbank', selectedCorePaymentMethod: 'vbank' },
           _local: {},
           _global: {},
         },
@@ -225,6 +228,118 @@ describe('주문 생성 body — 확장 병합 칸 계약', () => {
         account_number: '110-123-456789',
         holder: '홍길동',
       });
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // #454 — 플러그인 결제수단(toss_*)의 코어 결제수단 전송
+  //
+  // 유저 표면에서는 "토스 가상계좌"(toss_virtual_account) 라는 독립 결제수단이지만,
+  // 주문 레코드에는 코어 PaymentMethodEnum 값(vbank)으로 저장되어야 한다. 코어 enum 은
+  // toss_* 를 거부하므로(422), body 의 payment_method 는 선택 결제수단의 core_payment_method
+  // 로 번역해 전송한다. toss_* 선택값 자체는 _local.paymentMethod 에 남아 SDK 호출 시 참조된다.
+  // ─────────────────────────────────────────────────────────────
+  describe('플러그인 결제수단 → 코어 결제수단 전송 (#454)', () => {
+    it('body 의 payment_method 는 _computed.selectedCorePaymentMethod 를 사용한다', () => {
+      const ctx = baseCtx({
+        _computed: {
+          ordererDefaults: { name: '홍길동', phone: '01012345678', email: 'a@b.c' },
+          selectedPaymentMethod: 'toss_virtual_account',
+          selectedCorePaymentMethod: 'vbank',
+        },
+      });
+      // toss_virtual_account 를 골랐어도 서버에는 코어 값 vbank 가 나가야 한다.
+      expect(evalBody(ctx).payment_method).toBe('vbank');
+    });
+
+    it('코어 매핑이 없는 결제수단은 raw id 를 그대로 전송한다 (dbank·KG 무영향)', () => {
+      const ctx = baseCtx({
+        _computed: {
+          ordererDefaults: { name: '홍길동', phone: '01012345678', email: 'a@b.c' },
+          selectedPaymentMethod: 'dbank',
+          selectedCorePaymentMethod: 'dbank',
+        },
+      });
+      expect(evalBody(ctx).payment_method).toBe('dbank');
+    });
+
+    it('dbank 분기(계좌 정보)는 코어 값 기준으로 판정된다', () => {
+      const ctx = baseCtx({
+        _computed: {
+          ordererDefaults: { name: '홍길동', phone: '01012345678', email: 'a@b.c' },
+          selectedPaymentMethod: 'dbank',
+          selectedCorePaymentMethod: 'dbank',
+        },
+      });
+      expect(evalBody(ctx).dbank).toEqual({
+        bank_code: '004',
+        account_number: '110-123',
+        account_holder: '시르소프트',
+      });
+    });
+
+    it('토스 결제수단 선택 시 dbank 분기는 null (계좌 정보 미포함)', () => {
+      const ctx = baseCtx({
+        _computed: {
+          ordererDefaults: { name: '홍길동', phone: '01012345678', email: 'a@b.c' },
+          selectedPaymentMethod: 'toss_virtual_account',
+          selectedCorePaymentMethod: 'vbank',
+        },
+      });
+      expect(evalBody(ctx).dbank).toBeNull();
+    });
+  });
+
+  // selectedCorePaymentMethod computed 자체를 checkout.json 원문에서 평가한다.
+  // body 테스트는 이 값을 주입받아 검증하므로, computed 가 실제로 카탈로그의
+  // core_payment_method 를 해석하는지는 여기서 고정한다.
+  describe('selectedCorePaymentMethod computed (checkout.json 원문 평가)', () => {
+    const coreExpr: string = (checkoutJson as any).computed.selectedCorePaymentMethod;
+
+    /** 모듈이 병합 시 보존하는 결제수단 카탈로그 (core_payment_method 포함) */
+    const catalogCtx = (selected?: string) => ({
+      _local: selected ? { paymentMethod: selected } : {},
+      paymentSettings: {
+        data: {
+          order_settings: {
+            payment_methods: [
+              { id: 'dbank', is_active: true },
+              { id: 'toss_card', is_active: true, core_payment_method: 'card' },
+              { id: 'toss_virtual_account', is_active: true, core_payment_method: 'vbank' },
+              { id: 'toss_transfer', is_active: true, core_payment_method: 'bank' },
+              // KG 는 core_payment_method 미선언 (인터셉터 방식) — raw id 폴백 대상
+              { id: 'kginicis_japan_paypay', is_active: true },
+            ],
+          },
+        },
+      },
+    });
+
+    const evalCore = (ctx: Record<string, any>) =>
+      engine.evaluateExpression(coreExpr.slice(2, -2), ctx);
+
+    it.each([
+      ['toss_virtual_account', 'vbank'],
+      ['toss_transfer', 'bank'],
+      ['toss_card', 'card'],
+    ])('%s → 코어 %s 로 번역된다', (selected, expected) => {
+      expect(evalCore(catalogCtx(selected))).toBe(expected);
+    });
+
+    it('dbank(코어 매핑 미선언)는 raw id 그대로', () => {
+      expect(evalCore(catalogCtx('dbank'))).toBe('dbank');
+    });
+
+    it('KG 결제수단(코어 매핑 미선언)은 raw id 그대로 — 인터셉터 방식 무영향', () => {
+      expect(evalCore(catalogCtx('kginicis_japan_paypay'))).toBe('kginicis_japan_paypay');
+    });
+
+    it('미선택 시 첫 활성 결제수단으로 폴백한다', () => {
+      expect(evalCore(catalogCtx())).toBe('dbank');
+    });
+
+    it('카탈로그가 비어도 dbank 로 폴백한다 (초기 진입)', () => {
+      expect(evalCore({ _local: {}, paymentSettings: undefined })).toBe('dbank');
     });
   });
 });
