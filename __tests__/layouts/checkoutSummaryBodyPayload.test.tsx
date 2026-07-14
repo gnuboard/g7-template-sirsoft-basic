@@ -18,6 +18,7 @@
 import { describe, it, expect } from 'vitest';
 import { DataBindingEngine } from '@core/template-engine/DataBindingEngine';
 import checkoutSummaryJson from '../../layouts/partials/shop/_checkout_summary.json';
+import checkoutPaymentJson from '../../layouts/partials/shop/_checkout_payment.json';
 import checkoutJson from '../../layouts/shop/checkout.json';
 
 /** 객체 트리에서 조건을 만족하는 첫 노드를 깊이우선 탐색 */
@@ -228,6 +229,57 @@ describe('주문 생성 body — 확장 병합 칸 계약', () => {
         account_number: '110-123-456789',
         holder: '홍길동',
       });
+    });
+  });
+
+  // 결제수단 전환 시 이전 수단이 소유하던 입력값이 남아 payload 에 실리던 결함의 회귀 가드.
+  // 확장 슬롯(현금영수증)과 환불계좌 블록은 결제수단 조건부로 언마운트되지만 _local 값은 남는다.
+  // 무통장에서 입력 → 카드로 전환 시 그 값이 그대로 주문 생성 POST 에 실렸다.
+  describe('결제수단 전환 — 이전 수단 소유 상태 초기화', () => {
+    it('결제수단 선택 액션이 확장 칸과 환불계좌를 함께 비운다', () => {
+      const methodSelect = findNode(
+        checkoutPaymentJson,
+        (n: any) =>
+          Array.isArray(n?.actions) &&
+          n.actions.some(
+            (a: any) =>
+              a?.type === 'click' &&
+              JSON.stringify(a).includes('_local.paymentMethod'),
+          ),
+      );
+      expect(methodSelect, '결제수단 선택 액션 노드를 찾지 못했다').toBeDefined();
+
+      const clickAction = methodSelect.actions.find((a: any) => a?.type === 'click');
+      const inner = clickAction?.params?.actions ?? [];
+      const targets = inner.map((a: any) => a?.params?.target);
+
+      // 결제수단 자체는 설정하고
+      expect(targets).toContain('_local.paymentMethod');
+      // 이전 수단이 소유하던 상태는 비운다
+      expect(targets).toContain('_local.checkoutExtraPayload');
+      expect(targets).toContain('_local.refundBankCode');
+      expect(targets).toContain('_local.refundBankAccount');
+      expect(targets).toContain('_local.refundBankHolder');
+    });
+
+    it('초기화된 상태로 조립한 payload 에는 이전 수단의 값이 남지 않는다', () => {
+      // 무통장에서 현금영수증·환불계좌를 입력한 뒤 카드로 전환된 직후의 _local 상태
+      const ctx = baseCtx({
+        _local: {
+          ...baseCtx()._local,
+          paymentMethod: 'card',
+          checkoutExtraPayload: {},
+          refundBankCode: '',
+          refundBankAccount: '',
+          refundBankHolder: '',
+        },
+      });
+
+      const body = evalBody(ctx);
+
+      expect(body.refund_bank).toBeNull();
+      expect(body.cash_receipt_requested).toBeUndefined();
+      expect(body.cash_receipt_identifier).toBeUndefined();
     });
   });
 

@@ -146,9 +146,33 @@
           ],
           "actions": [
             {
+              "comment": "결제수단 전환 시 이전 수단이 소유하던 입력값을 함께 비운다. 확장 슬롯(현금영수증 등)과 환불계좌 블록은 결제수단 조건부로 언마운트되지만 _local 값은 남으므로, 초기화하지 않으면 무통장에서 입력한 값이 카드 주문 payload 에 그대로 실린다.",
               "type": "click",
-              "handler": "setState",
-              "params": { "target": "_local.paymentMethod", "value": "{{method.id}}" }
+              "handler": "sequence",
+              "params": {
+                "actions": [
+                  {
+                    "handler": "setState",
+                    "params": { "target": "_local.paymentMethod", "value": "{{method.id}}" }
+                  },
+                  {
+                    "handler": "setState",
+                    "params": { "target": "_local.checkoutExtraPayload", "value": {} }
+                  },
+                  {
+                    "handler": "setState",
+                    "params": { "target": "_local.refundBankCode", "value": "" }
+                  },
+                  {
+                    "handler": "setState",
+                    "params": { "target": "_local.refundBankAccount", "value": "" }
+                  },
+                  {
+                    "handler": "setState",
+                    "params": { "target": "_local.refundBankHolder", "value": "" }
+                  }
+                ]
+              }
             }
           ]
         }
