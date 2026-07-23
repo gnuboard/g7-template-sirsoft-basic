@@ -291,7 +291,16 @@
                                   "handler": "updateDataSource",
                                   "params": { "dataSourceId": "checkoutData", "data": "{{response}}" }
                                 }
-                              ]
+                              ],
+                                "onError": [
+                                    {
+                                        "handler": "toast",
+                                        "params": {
+                                            "type": "error",
+                                            "message": "{{error.message}}"
+                                        }
+                                    }
+                                ]
                             }
                           ],
                           "onError": [
