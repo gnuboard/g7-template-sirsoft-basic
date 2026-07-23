@@ -95,7 +95,16 @@
                       "onSuccess": [
                         { "handler": "refetchDataSource", "params": { "dataSourceId": "wishlist" } },
                         { "handler": "toast", "params": { "type": "success", "message": "$t:mypage.wishlist.removed" } }
-                      ]
+                      ],
+                        "onError": [
+                            {
+                                "handler": "toast",
+                                "params": {
+                                    "type": "error",
+                                    "message": "{{error.message}}"
+                                }
+                            }
+                        ]
                     }
                   ]
                 }
