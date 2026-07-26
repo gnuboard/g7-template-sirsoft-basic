@@ -31,6 +31,7 @@
               "params": { "target": "local", "q": "{{$event.target.value}}" }
             },
             {
+              "comment": "audit:allow layout-list-context-navigate-merge-query 새 검색 실행 — 검색어를 바꾸면 결과 집합 자체가 달라지므로 이전 페이지·필터를 물려받지 않는다.",
               "type": "keydown",
               "key": "Enter",
               "handler": "navigate",
@@ -51,7 +52,11 @@
           "handler": "sequence",
           "actions": [
             { "handler": "setState", "params": { "target": "global", "searchPage": 1 } },
-            { "handler": "navigate", "params": { "path": "/search", "query": { "q": "{{_local.q ?? ''}}" } } }
+            {
+              "comment": "audit:allow layout-list-context-navigate-merge-query 새 검색 실행 — 검색어를 바꾸면 결과 집합 자체가 달라지므로 이전 페이지·필터를 물려받지 않는다.",
+              "handler": "navigate",
+              "params": { "path": "/search", "query": { "q": "{{_local.q ?? ''}}" } }
+            }
           ]
         }
       ]

@@ -740,7 +740,9 @@
               "type": "click",
               "handler": "navigate",
               "params": {
-                "path": "{{route.id ? '/board/' + route.slug + '/' + route.id : '/board/' + route.slug}}"
+                "path": "{{route.id ? '/board/' + route.slug + '/' + route.id : '/board/' + route.slug}}",
+                "mergeQuery": true,
+                "query": {}
               }
             }
           ],
@@ -801,7 +803,9 @@
                     {
                       "handler": "navigate",
                       "params": {
-                        "path": "/board/{{route?.slug}}/{{result?.data?.id}}"
+                        "path": "/board/{{route?.slug}}/{{result?.data?.id}}",
+                        "mergeQuery": true,
+                        "query": {}
                       }
                     }
                   ],

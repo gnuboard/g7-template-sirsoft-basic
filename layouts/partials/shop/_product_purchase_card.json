@@ -290,9 +290,10 @@
           "text": "$t:shop.buy_now",
           "actions": [
             {
+              "comment": "audit:allow layout-list-context-navigate-merge-query 주문서로 나가는 이동이다 — 상품 목록의 페이지·정렬을 물려주지 않는다.",
               "type": "click",
               "handler": "navigate",
-              "params": { "url": "{{_global.shopBase}}/checkout?items={{encodeURIComponent(JSON.stringify(_local.selectedItems))}}" }
+              "params": { "path": "{{_global.shopBase}}/checkout?items={{encodeURIComponent(JSON.stringify(_local.selectedItems))}}" }
             }
           ]
         },
