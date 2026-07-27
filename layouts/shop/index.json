@@ -9,7 +9,7 @@
             "extensions": [
                 { "type": "module", "id": "sirsoft-ecommerce" }
             ],
-            "data_sources": ["products", "categories"],
+            "data_sources": ["products", "categories", "popularProducts", "newProducts"],
             "page_type": "shop_index",
             "toggle_setting": "$module_settings:sirsoft-ecommerce:seo.seo_shop_index",
             "vars": {
@@ -170,7 +170,7 @@
                                         "name": "Icon",
                                         "props": {
                                             "name": "shopping-cart",
-                                            "className": "w-6 h-6"
+                                            "className": "text-2xl"
                                         }
                                     },
                                     {

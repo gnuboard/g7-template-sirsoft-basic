@@ -12,7 +12,7 @@
             "extensions": [
                 { "type": "module", "id": "sirsoft-ecommerce" }
             ],
-            "data_sources": ["product", "popularProducts", "reviews"],
+            "data_sources": ["product", "popularProducts", "reviews", "qna"],
             "page_type": "product",
             "toggle_setting": "$module_settings:sirsoft-ecommerce:seo.seo_product_detail",
             "vars": {
