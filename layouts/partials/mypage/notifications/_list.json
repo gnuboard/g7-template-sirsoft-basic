@@ -193,6 +193,7 @@
                         ]
                     },
                     {
+                      "comment": "audit:allow layout-list-context-navigate-merge-query 알림 대상으로 이동 — 목적지는 알림이 지정한 임의 화면이므로 알림 목록 클러스터 밖이다.",
                       "handler": "navigate",
                       "if": "{{notification.url}}",
                       "params": { "path": "{{notification.url}}" }

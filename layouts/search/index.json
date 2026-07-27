@@ -9,7 +9,7 @@
             "extensions": [
                 { "type": "module", "id": "sirsoft-ecommerce" }
             ],
-            "data_sources": [],
+            "data_sources": ["searchResults"],
             "page_type": "search",
             "toggle_setting": "$module_settings:sirsoft-ecommerce:seo.seo_search_result",
             "vars": {

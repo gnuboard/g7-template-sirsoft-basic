@@ -36,10 +36,12 @@
               "text": "{{product.category_name}}"
             },
             {
-              "type": "basic",
-              "name": "Span",
-              "props": { "className": "font-medium text-gray-900 dark:text-white truncate" },
-              "html": "{{product.name_highlighted ?? product.name}}"
+              "type": "composite",
+              "name": "HtmlContent",
+              "props": {
+                "content": "{{product.name_highlighted ?? product.name}}",
+                "className": "font-medium text-gray-900 dark:text-white truncate [&_mark]:bg-yellow-200 [&_mark]:dark:bg-yellow-500/40 [&_mark]:px-0.5 [&_mark]:rounded"
+              }
             }
           ]
         },

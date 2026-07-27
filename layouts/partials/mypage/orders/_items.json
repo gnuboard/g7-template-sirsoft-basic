@@ -182,6 +182,7 @@
                   },
                   "actions": [
                     {
+                      "comment": "audit:allow layout-list-context-navigate-merge-query 주문 항목 → 상품 상세 이동 — 주문 목록과 다른 클러스터(상품)로 나가는 이동이다.",
                       "type": "click",
                       "handler": "navigate",
                       "params": { "path": "{{_global.shopBase}}/products/{{item.product_snapshot?.product_code ?? item.product_id}}" }
@@ -221,6 +222,7 @@
                       },
                       "actions": [
                         {
+                          "comment": "audit:allow layout-list-context-navigate-merge-query 주문 항목 → 상품 상세 이동 — 주문 목록과 다른 클러스터(상품)로 나가는 이동이다.",
                           "type": "click",
                           "handler": "navigate",
                           "params": { "path": "{{_global.shopBase}}/products/{{item.product_snapshot?.product_code ?? item.product_id}}" }

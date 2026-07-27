@@ -516,7 +516,11 @@
                                 "conditions": [
                                   {
                                     "if": "{{_global.currentUser?.uuid}}",
-                                    "then": { "handler": "navigate", "params": { "path": "{{_global.shopBase}}/checkout" } }
+                                    "then": {
+                                      "comment": "audit:allow layout-list-context-navigate-merge-query 주문서로 이동 — 상품 목록/상세와 다른 클러스터(주문 흐름)로 나가는 이동이다.",
+                                      "handler": "navigate",
+                                      "params": { "path": "{{_global.shopBase}}/checkout" }
+                                    }
                                   },
                                   {
                                     "then": {

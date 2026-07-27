@@ -12,7 +12,7 @@
             "extensions": [
                 { "type": "module", "id": "sirsoft-ecommerce" }
             ],
-            "data_sources": ["product", "popularProducts", "reviews"],
+            "data_sources": ["product", "popularProducts", "reviews", "qna"],
             "page_type": "product",
             "toggle_setting": "$module_settings:sirsoft-ecommerce:seo.seo_product_detail",
             "vars": {
@@ -292,7 +292,9 @@
                                 "type": "click",
                                 "handler": "navigate",
                                 "params": {
-                                    "path": "{{_global.shopBase}}/products"
+                                    "path": "{{_global.shopBase}}/products",
+                                    "mergeQuery": true,
+                                    "query": {}
                                 }
                             }
                         ]
@@ -471,8 +473,10 @@
                                         }
                                     },
                                     {
+                                        "comment": "탭은 이 화면 안에서만 바뀌는 값이다 — 목록에서 실어 온 page·정렬·검색어·분류는 그대로 두고 tab 만 얹는다. 병합하지 않으면 탭을 한 번 누르는 순간 목록 상태가 사라져 '상품 목록' 버튼이 1페이지로 되돌아간다 (#75).",
                                         "handler": "replaceUrl",
                                         "params": {
+                                            "mergeQuery": true,
                                             "query": {
                                                 "tab": "{{$args[0]}}"
                                             }

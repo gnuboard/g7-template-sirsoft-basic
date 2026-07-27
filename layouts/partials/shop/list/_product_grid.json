@@ -27,7 +27,8 @@
               "name": "ProductCard",
               "props": {
                 "product": "{{product}}",
-                "shopBase": "{{_global.shopBase ?? '/shop'}}"
+                "shopBase": "{{_global.shopBase ?? '/shop'}}",
+                "preserveListQuery": true
               }
             }
           ]
