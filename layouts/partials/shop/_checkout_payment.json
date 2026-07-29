@@ -200,7 +200,7 @@
           "type": "basic",
           "name": "P",
           "props": { "className": "text-xs text-blue-600 dark:text-blue-400" },
-          "text": "$t:shop.checkout.vbank_due_notice|days={{paymentSettings.data?.order_settings?.vbank_due_days ?? 3}}"
+          "text": "$t:shop.checkout.vbank_due_notice|days={{paymentSettings.data?.order_settings?.auto_cancel_days ?? 3}}"
         },
         {
           "comment": "입금자명 입력",
@@ -426,7 +426,7 @@
           "type": "basic",
           "name": "P",
           "props": { "className": "text-xs text-amber-600 dark:text-amber-400 mt-3" },
-          "text": "$t:shop.checkout.dbank_due_notice|days={{paymentSettings.data?.order_settings?.dbank_due_days ?? 7}}"
+          "text": "$t:shop.checkout.dbank_due_notice|days={{paymentSettings.data?.order_settings?.auto_cancel_days ?? 3}}"
         }
       ]
     }
