@@ -270,7 +270,23 @@
                           "handler": "setState",
                           "params": {
                             "target": "local",
-                            "editingAddress": "{{addr}}",
+                            "editingAddress": {
+                              "id": "{{addr.id}}",
+                              "name": "{{addr.name ?? ''}}",
+                              "recipient_name": "{{addr.recipient_name ?? ''}}",
+                              "recipient_phone": "{{addr.recipient_phone ?? ''}}",
+                              "country_code": "{{addr.country_code ?? 'KR'}}",
+                              "zipcode": "{{addr.zipcode ?? ''}}",
+                              "address": "{{addr.address ?? ''}}",
+                              "address_detail": "{{addr.address_detail ?? ''}}",
+                              "city": "{{addr.city ?? ''}}",
+                              "address_line_1": "{{addr.address_line_1 ?? ''}}",
+                              "address_line_2": "{{addr.address_line_2 ?? ''}}",
+                              "intl_city": "{{addr.city ?? ''}}",
+                              "intl_state": "{{addr.state ?? ''}}",
+                              "intl_postal_code": "{{addr.postal_code ?? ''}}",
+                              "is_default": "{{addr.is_default ?? false}}"
+                            },
                             "addressModalMode": "form",
                             "addressErrors": null
                           }
