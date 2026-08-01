@@ -79,7 +79,7 @@
                                 "name": "Icon",
                                 "props": {
                                     "name": "loader-2",
-                                    "className": "w-10 h-10 animate-spin text-gray-500 dark:text-gray-400"
+                                    "className": "text-4xl animate-spin text-gray-500 dark:text-gray-400"
                                 }
                             },
                             {
@@ -113,7 +113,7 @@
                                         "name": "Icon",
                                         "props": {
                                             "name": "alert-triangle",
-                                            "className": "w-6 h-6 text-amber-500"
+                                            "className": "text-2xl text-amber-500"
                                         }
                                     },
                                     {
@@ -139,7 +139,7 @@
                                     "className": "space-y-2 mb-6 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900"
                                 },
                                 "iteration": {
-                                    "items": "{{_local.skipped ?? []}}",
+                                    "source": "{{_local.skipped ?? []}}",
                                     "item_var": "item",
                                     "index_var": "idx"
                                 },
@@ -239,7 +239,7 @@
                                         "name": "Icon",
                                         "props": {
                                             "name": "x-circle",
-                                            "className": "w-6 h-6 text-red-500"
+                                            "className": "text-2xl text-red-500"
                                         }
                                     },
                                     {
