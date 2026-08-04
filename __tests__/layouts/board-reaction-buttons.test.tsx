@@ -41,7 +41,13 @@ function findByComment(root: unknown, commentText: string): Node[] {
 }
 
 describe('이슈 #525 — 게시글 상세 반응 버튼 (basic/show.json)', () => {
+    // @scenario case=detail_hidden_when_no_active_types
+    // @effects reaction_area_hidden_when_no_active_types
     it('반응 영역은 use_reaction + reaction_type_options 존재 시에만 노출된다 (확정 11)', () => {
+        // 이 if 는 use_reaction 과 reaction_type_options 둘 다에 의존하므로
+        // reaction off / 유형 0개 두 케이스 모두 이 조건으로 미노출된다.
+        // @scenario case=detail_hidden_when_use_reaction_off
+        // @effects reaction_area_hidden_when_use_reaction_off
         const areas = findByComment(basicShow, '게시글 반응(추천/비추천) 영역');
         expect(areas.length).toBe(1);
 
@@ -52,6 +58,8 @@ describe('이슈 #525 — 게시글 상세 반응 버튼 (basic/show.json)', () 
         expect(area.if as string).toContain('length > 0');
     });
 
+    // @scenario case=detail_shows_active_types_even_zero
+    // @effects active_types_always_shown_even_zero_count
     it('반응 유형을 reaction_type_options 로 iteration 한다', () => {
         const areas = findByComment(basicShow, '게시글 반응(추천/비추천) 영역');
         const iterations = collectNodes(areas[0], (n) => n.iteration !== undefined);
@@ -62,6 +70,8 @@ describe('이슈 #525 — 게시글 상세 반응 버튼 (basic/show.json)', () 
         expect(iter.item_var).toBe('reactionType');
     });
 
+    // @scenario case=author_buttons_disabled
+    // @effects author_sees_buttons_disabled, active_types_always_shown_even_zero_count, my_reaction_type_highlighted
     it('유형별 버튼은 본인 글이면 disabled 이고 개수를 바인딩한다 (확정 08·09)', () => {
         const areas = findByComment(basicShow, '게시글 반응(추천/비추천) 영역');
         const buttons = collectNodes(areas[0], (n) => n.name === 'Button');
