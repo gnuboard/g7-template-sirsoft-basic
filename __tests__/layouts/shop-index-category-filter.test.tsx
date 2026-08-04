@@ -5,7 +5,7 @@
  * 테스트 대상: templates/.../layouts/shop/index.json
  *
  * 검증 항목:
- * - products 데이터소스가 category_id 를 query.category 에 바인딩
+ * - 목록 데이터소스가 category_id 를 query.category 에 바인딩 (#519 이후 storefront 단일 요청)
  * - 카테고리 버튼 navigate 가 /products + query.category = cat.id 로 이동 (slug 페이지 이동 금지)
  * - "전체" 버튼은 query 비움
  * - 선택 카테고리 active className 조건부 적용
@@ -36,10 +36,14 @@ function findNodes(node: any, predicate: (n: any) => boolean, results: any[] = [
 }
 
 describe('shop/index 카테고리 필터 (U6②)', () => {
-  it('products 데이터소스가 category_id 를 query.category 에 바인딩해야 함', () => {
-    const products = indexLayout.data_sources.find((ds: any) => ds.id === 'products');
-    expect(products).toBeDefined();
-    expect(products.params.category_id).toBe("{{query.category ?? ''}}");
+  it('목록 데이터소스가 category_id 를 query.category 에 바인딩해야 함', () => {
+    const storefront = indexLayout.data_sources.find((ds: any) => ds.id === 'storefront');
+    expect(storefront).toBeDefined();
+    expect(storefront.params.category_id).toBe("{{query.category ?? ''}}");
+  });
+
+  it('화면이 목록을 한 번의 요청으로 받아야 함 (#519 — 종전 5요청 통합)', () => {
+    expect(indexLayout.data_sources.map((ds: any) => ds.id)).toEqual(['storefront']);
   });
 
   it('iteration 카테고리 버튼이 /products 로 이동하며 query.category = cat.id 를 설정해야 함', () => {

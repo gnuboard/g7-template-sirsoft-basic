@@ -12,14 +12,14 @@
       "children": [
         { "type": "basic", "name": "Icon", "props": { "name": "grid", "size": "sm", "className": "mr-1.5 inline" } },
         { "type": "basic", "name": "Span", "text": "$t:search.tabs.all" },
-        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{(_global.searchActiveTab ?? 'all') === 'all' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.all_count ?? searchResults.data.total ?? 0) | number}}" }
+        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{(_global.searchActiveTab ?? 'all') === 'all' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.all_count ?? searchResults.data.total ?? 0) | number}}{{(searchResults.data.all_count_is_exact ?? true) ? '' : '+'}}" }
       ],
       "actions": [
         {
           "type": "click",
           "handler": "sequence",
           "actions": [
-            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "all", "searchBoardFilter": "", "searchPage": 1 } },
+            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "all", "searchBoardFilter": "", "searchPage": 1, "searchCursor": "" } },
             { "handler": "refetchDataSource", "params": { "dataSourceId": "searchResults" } }
           ]
         }
@@ -32,14 +32,14 @@
       "children": [
         { "type": "basic", "name": "Icon", "props": { "name": "file-text", "size": "sm", "className": "mr-1.5 inline" } },
         { "type": "basic", "name": "Span", "text": "$t:search.tabs.posts" },
-        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{_global.searchActiveTab === 'posts' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.posts_count ?? 0) | number}}" }
+        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{_global.searchActiveTab === 'posts' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.posts_count ?? 0) | number}}{{(searchResults.data.counts_are_exact?.posts ?? true) ? '' : '+'}}" }
       ],
       "actions": [
         {
           "type": "click",
           "handler": "sequence",
           "actions": [
-            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "posts", "searchBoardFilter": "", "searchPage": 1 } },
+            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "posts", "searchBoardFilter": "", "searchPage": 1, "searchCursor": "" } },
             { "handler": "refetchDataSource", "params": { "dataSourceId": "searchResults" } }
           ]
         }
@@ -52,14 +52,14 @@
       "children": [
         { "type": "basic", "name": "Icon", "props": { "name": "shopping-bag", "size": "sm", "className": "mr-1.5 inline" } },
         { "type": "basic", "name": "Span", "text": "$t:search.tabs.products" },
-        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{_global.searchActiveTab === 'products' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.products_count ?? 0) | number}}" }
+        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{_global.searchActiveTab === 'products' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.products_count ?? 0) | number}}{{(searchResults.data.counts_are_exact?.products ?? true) ? '' : '+'}}" }
       ],
       "actions": [
         {
           "type": "click",
           "handler": "sequence",
           "actions": [
-            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "products", "searchPage": 1 } },
+            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "products", "searchPage": 1, "searchCursor": "" } },
             { "handler": "refetchDataSource", "params": { "dataSourceId": "searchResults" } }
           ]
         }
@@ -72,14 +72,14 @@
       "children": [
         { "type": "basic", "name": "Icon", "props": { "name": "file-alt", "size": "sm", "className": "mr-1.5 inline" } },
         { "type": "basic", "name": "Span", "text": "$t:search.tabs.pages" },
-        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{_global.searchActiveTab === 'pages' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.pages_count ?? 0) | number}}" }
+        { "type": "basic", "name": "Span", "props": { "className": "ml-1.5 {{_global.searchActiveTab === 'pages' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}}" }, "text": "{{(searchResults.data.pages_count ?? 0) | number}}{{(searchResults.data.counts_are_exact?.pages ?? true) ? '' : '+'}}" }
       ],
       "actions": [
         {
           "type": "click",
           "handler": "sequence",
           "actions": [
-            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "pages", "searchPage": 1 } },
+            { "handler": "setState", "params": { "target": "global", "searchActiveTab": "pages", "searchPage": 1, "searchCursor": "" } },
             { "handler": "refetchDataSource", "params": { "dataSourceId": "searchResults" } }
           ]
         }

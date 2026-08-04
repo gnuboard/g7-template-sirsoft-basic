@@ -1,11 +1,11 @@
 {
   "meta": {
     "is_partial": true,
-    "description": "신상품 섹션"
+    "description": "신상품 섹션. 데이터소스 이름에 직접 결합하지 않고 부모 레이아웃이 정의한 $computed.newItems 를 읽는다 (다른 화면이 재사용해도 섹션이 조용히 비지 않는다)"
   },
   "type": "basic",
   "name": "Div",
-  "if": "{{newProducts.data && newProducts.data.length > 0}}",
+  "if": "{{($computed.newItems ?? []).length > 0}}",
   "isolatedState": {
     "scrollIdx": 0
   },
@@ -22,7 +22,7 @@
           "name": "H2",
           "props": { "className": "text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2" },
           "children": [
-            { "type": "basic", "name": "Icon", "props": { "name": "sparkles", "className": "w-5 h-5 text-yellow-500" } },
+            { "type": "basic", "name": "Icon", "props": { "name": "sparkles", "className": "text-xl text-yellow-500" } },
             { "type": "basic", "name": "Span", "text": "$t:shop.new_products" }
           ]
         },
@@ -63,26 +63,26 @@
                   ]
                 }
               ],
-              "children": [{ "type": "basic", "name": "Icon", "props": { "name": "chevron-left", "className": "w-4 h-4" } }]
+              "children": [{ "type": "basic", "name": "Icon", "props": { "name": "chevron-left", "className": "text-base" } }]
             },
             {
               "type": "basic",
               "name": "Button",
               "props": {
-                "className": "{{(_isolated.scrollIdx + 4) >= (newProducts.data.length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
-                "disabled": "{{(_isolated.scrollIdx + 4) >= (newProducts.data.length)}}"
+                "className": "{{(_isolated.scrollIdx + 4) >= (($computed.newItems ?? []).length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
+                "disabled": "{{(_isolated.scrollIdx + 4) >= (($computed.newItems ?? []).length)}}"
               },
               "responsive": {
                 "0-639": {
                   "props": {
-                    "className": "{{(_isolated.scrollIdx + 2) >= (newProducts.data.length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
-                    "disabled": "{{(_isolated.scrollIdx + 2) >= (newProducts.data.length)}}"
+                    "className": "{{(_isolated.scrollIdx + 2) >= (($computed.newItems ?? []).length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
+                    "disabled": "{{(_isolated.scrollIdx + 2) >= (($computed.newItems ?? []).length)}}"
                   }
                 },
                 "640-1023": {
                   "props": {
-                    "className": "{{(_isolated.scrollIdx + 3) >= (newProducts.data.length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
-                    "disabled": "{{(_isolated.scrollIdx + 3) >= (newProducts.data.length)}}"
+                    "className": "{{(_isolated.scrollIdx + 3) >= (($computed.newItems ?? []).length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
+                    "disabled": "{{(_isolated.scrollIdx + 3) >= (($computed.newItems ?? []).length)}}"
                   }
                 }
               },
@@ -111,7 +111,7 @@
                   ]
                 }
               ],
-              "children": [{ "type": "basic", "name": "Icon", "props": { "name": "chevron-right", "className": "w-4 h-4" } }]
+              "children": [{ "type": "basic", "name": "Icon", "props": { "name": "chevron-right", "className": "text-base" } }]
             }
           ]
         }
@@ -125,7 +125,7 @@
         {
           "type": "basic",
           "name": "Div",
-          "iteration": { "source": "{{newProducts.data ?? []}}", "item_var": "product", "index_var": "idx" },
+          "iteration": { "source": "{{$computed.newItems ?? []}}", "item_var": "product", "index_var": "idx" },
           "props": {
             "id": "new-product-{{idx}}"
           },

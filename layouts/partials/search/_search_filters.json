@@ -29,7 +29,7 @@
           "type": "change",
           "handler": "sequence",
           "actions": [
-            { "handler": "setState", "params": { "target": "global", "searchBoardFilter": "{{$event.target.value}}", "searchPage": 1 } },
+            { "handler": "setState", "params": { "target": "global", "searchBoardFilter": "{{$event.target.value}}", "searchPage": 1, "searchCursor": "" } },
             { "handler": "refetchDataSource", "params": { "dataSourceId": "searchResults" } }
           ]
         }
@@ -54,7 +54,7 @@
           "type": "change",
           "handler": "sequence",
           "actions": [
-            { "handler": "setState", "params": { "target": "global", "searchSortBy": "{{$event.target.value}}", "searchPage": 1 } },
+            { "handler": "setState", "params": { "target": "global", "searchSortBy": "{{$event.target.value}}", "searchPage": 1, "searchCursor": "" } },
             { "handler": "refetchDataSource", "params": { "dataSourceId": "searchResults" } }
           ]
         }
@@ -81,7 +81,7 @@
           "type": "change",
           "handler": "sequence",
           "actions": [
-            { "handler": "setState", "params": { "target": "global", "searchSortBy": "{{$event.target.value}}", "searchPage": 1 } },
+            { "handler": "setState", "params": { "target": "global", "searchSortBy": "{{$event.target.value}}", "searchPage": 1, "searchCursor": "" } },
             { "handler": "refetchDataSource", "params": { "dataSourceId": "searchResults" } }
           ]
         }

@@ -146,10 +146,11 @@
           "comment": "페이지네이션",
           "type": "composite",
           "name": "Pagination",
-          "if": "{{wishlist.data.pagination.last_page > 1}}",
+          "if": "{{((wishlist.data.pagination.last_page ?? 0) > 1) || (wishlist.data.pagination.has_more_pages === true) || ((wishlist.data.pagination.current_page ?? 1) > 1)}}",
           "props": {
             "currentPage": "{{wishlist.data.pagination.current_page}}",
-            "totalPages": "{{wishlist.data.pagination.last_page}}",
+            "totalPages": "{{wishlist.data.pagination.last_page ?? null}}",
+            "hasMorePages": "{{wishlist.data.pagination.has_more_pages ?? false}}",
             "className": "pt-4 flex justify-center"
           },
           "actions": [

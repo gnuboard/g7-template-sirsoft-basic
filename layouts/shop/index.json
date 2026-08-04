@@ -3,13 +3,25 @@
     "layout_name": "shop/index",
     "permissions": [],
     "extends": "_user_base",
+    "computed": {
+        "gridProducts": "{{storefront?.data?.products?.data ?? []}}",
+        "gridPagination": "{{storefront?.data?.products?.pagination ?? null}}",
+        "popularItems": "{{storefront?.data?.popular_products ?? []}}",
+        "recentItems": "{{storefront?.data?.recent_products ?? []}}",
+        "newItems": "{{storefront?.data?.new_products ?? []}}"
+    },
     "meta": {
         "seo": {
             "enabled": true,
             "extensions": [
-                { "type": "module", "id": "sirsoft-ecommerce" }
+                {
+                    "type": "module",
+                    "id": "sirsoft-ecommerce"
+                }
             ],
-            "data_sources": ["products", "categories", "popularProducts", "newProducts"],
+            "data_sources": [
+                "storefront"
+            ],
             "page_type": "shop_index",
             "toggle_setting": "$module_settings:sirsoft-ecommerce:seo.seo_shop_index",
             "vars": {
@@ -62,22 +74,11 @@
     },
     "data_sources": [
         {
-            "id": "categories",
-            "label_key": "$t:editor.data_source.categories",
+            "id": "storefront",
+            "label_key": "$t:editor.data_source.storefront",
+            "comment": "분류·상품목록·최근본·인기·신상품을 한 번에 받는다. 종전에는 같은 화면에 요청이 5번 나갔고 그 5번이 전부 같은 부팅을 되풀이했다. 각 묶음의 응답 형태는 개별 엔드포인트와 동일하다.",
             "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/categories",
-            "method": "GET",
-            "auto_fetch": true,
-            "loading_strategy": "progressive",
-            "fallback": {
-                "data": []
-            }
-        },
-        {
-            "id": "products",
-            "label_key": "$t:editor.data_source.products",
-            "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/products",
+            "endpoint": "/api/modules/sirsoft-ecommerce/storefront",
             "method": "GET",
             "auth_mode": "optional",
             "params": {
@@ -85,60 +86,29 @@
                 "per_page": 12,
                 "category_id": "{{query.category ?? ''}}",
                 "sort": "{{query.sort ?? 'latest'}}",
-                "search": "{{query.keyword ?? ''}}"
+                "search": "{{query.keyword ?? ''}}",
+                "popular_limit": 8,
+                "new_limit": 8,
+                "recent_ids": "{{(_global.recentProductIds ?? []).join(',')}}"
             },
             "auto_fetch": true,
             "loading_strategy": "progressive",
             "fallback": {
-                "data": [],
-                "meta": {
-                    "current_page": 1,
-                    "last_page": 1,
-                    "per_page": 12,
-                    "total": 0
+                "data": {
+                    "categories": [],
+                    "products": {
+                        "data": [],
+                        "pagination": {
+                            "current_page": 1,
+                            "last_page": 1,
+                            "per_page": 12,
+                            "total": 0
+                        }
+                    },
+                    "recent_products": [],
+                    "popular_products": [],
+                    "new_products": []
                 }
-            }
-        },
-        {
-            "id": "recentProducts",
-            "label_key": "$t:editor.data_source.recentProducts",
-            "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/products/recent",
-            "method": "GET",
-            "auth_mode": "optional",
-            "params": {
-                "ids": "{{(_global.recentProductIds ?? []).join(',')}}"
-            },
-            "auto_fetch": true,
-            "loading_strategy": "progressive",
-            "fallback": {
-                "data": []
-            }
-        },
-        {
-            "id": "popularProducts",
-            "label_key": "$t:editor.data_source.popularProducts",
-            "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/products/popular?limit=8",
-            "method": "GET",
-            "auth_mode": "optional",
-            "auto_fetch": true,
-            "loading_strategy": "progressive",
-            "fallback": {
-                "data": []
-            }
-        },
-        {
-            "id": "newProducts",
-            "label_key": "$t:editor.data_source.newProducts",
-            "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/products/new?limit=8",
-            "method": "GET",
-            "auth_mode": "optional",
-            "auto_fetch": true,
-            "loading_strategy": "progressive",
-            "fallback": {
-                "data": []
             }
         }
     ],
@@ -221,7 +191,9 @@
                         "comment": "최상위 카테고리 버튼 (전체 + 1단계 카테고리)",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "flex flex-wrap gap-2 mb-4" },
+                        "props": {
+                            "className": "flex flex-wrap gap-2 mb-4"
+                        },
                         "children": [
                             {
                                 "type": "basic",
@@ -231,13 +203,24 @@
                                 },
                                 "text": "$t:shop.category.all",
                                 "actions": [
-                                    { "comment": "audit:allow layout-list-context-navigate-merge-query 카테고리 '전체' 선택 — 카테고리 필터를 푸는 의도적 리셋이므로 병합하지 않는다", "type": "click", "handler": "navigate", "params": { "path": "{{_global.shopBase}}/products", "query": {} } }
+                                    {
+                                        "comment": "audit:allow layout-list-context-navigate-merge-query 카테고리 '전체' 선택 — 카테고리 필터를 푸는 의도적 리셋이므로 병합하지 않는다",
+                                        "type": "click",
+                                        "handler": "navigate",
+                                        "params": {
+                                            "path": "{{_global.shopBase}}/products",
+                                            "query": {}
+                                        }
+                                    }
                                 ]
                             },
                             {
                                 "type": "basic",
                                 "name": "Div",
-                                "iteration": { "source": "{{categories?.data ?? []}}", "item_var": "cat" },
+                                "iteration": {
+                                    "source": "{{storefront?.data?.categories ?? []}}",
+                                    "item_var": "cat"
+                                },
                                 "children": [
                                     {
                                         "type": "basic",
@@ -247,7 +230,18 @@
                                         },
                                         "text": "{{cat?.name_localized}}",
                                         "actions": [
-                                            { "comment": "audit:allow layout-list-context-navigate-merge-query 카테고리 전환 — 다른 목록으로의 이동이라 이전 카테고리의 검색·정렬 상태를 승계하지 않는다", "type": "click", "handler": "navigate", "params": { "path": "{{_global.shopBase}}/products", "query": { "category": "{{cat?.id}}", "page": "1" } } }
+                                            {
+                                                "comment": "audit:allow layout-list-context-navigate-merge-query 카테고리 전환 — 다른 목록으로의 이동이라 이전 카테고리의 검색·정렬 상태를 승계하지 않는다",
+                                                "type": "click",
+                                                "handler": "navigate",
+                                                "params": {
+                                                    "path": "{{_global.shopBase}}/products",
+                                                    "query": {
+                                                        "category": "{{cat?.id}}",
+                                                        "page": "1"
+                                                    }
+                                                }
+                                            }
                                         ]
                                     }
                                 ]

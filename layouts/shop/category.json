@@ -3,20 +3,24 @@
     "layout_name": "shop/category",
     "permissions": [],
     "extends": "_user_base",
+    "computed": {
+        "gridProducts": "{{storefront?.data?.products?.data ?? []}}",
+        "gridPagination": "{{storefront?.data?.products?.pagination ?? null}}"
+    },
     "meta": {
-        "title": "{{category?.data?.name_localized ?? $t:shop.categories}}",
-        "description": "{{category?.data?.description_localized ?? ''}}",
+        "title": "{{storefront?.data?.category?.name_localized ?? $t:shop.categories}}",
+        "description": "{{storefront?.data?.category?.description_localized ?? ''}}",
         "seo": {
             "enabled": true,
             "extensions": [
                 { "type": "module", "id": "sirsoft-ecommerce" }
             ],
-            "data_sources": ["category", "products"],
+            "data_sources": ["storefront"],
             "page_type": "category",
             "toggle_setting": "$module_settings:sirsoft-ecommerce:seo.seo_category",
             "vars": {
-                "category_name": "{{category.data.name ?? ''}}",
-                "category_description": "{{category.data.description ?? ''}}",
+                "category_name": "{{storefront?.data?.category?.name ?? ''}}",
+                "category_description": "{{storefront?.data?.category?.description ?? ''}}",
                 "site_name": "$core_settings:general.site_name",
                 "shopBase": "$module_settings:sirsoft-ecommerce:basic_info.route_path"
             },
@@ -24,61 +28,48 @@
             "changefreq": "weekly",
             "og": {
                 "type": "website",
-                "title": "{{_seo.category.title ?? category.data.name ?? ''}}",
-                "description": "{{_seo.category.description ?? category.data.description ?? ''}}"
+                "title": "{{_seo.category.title ?? storefront?.data?.category?.name ?? ''}}",
+                "description": "{{_seo.category.description ?? storefront?.data?.category?.description ?? ''}}"
             },
             "structured_data": {
                 "@type": "ItemList",
-                "name": "{{_seo.category.title ?? category.data.name ?? ''}}"
+                "name": "{{_seo.category.title ?? storefront?.data?.category?.name ?? ''}}"
             }
         }
     },
     "data_sources": [
         {
-            "id": "category",
-            "label_key": "$t:editor.data_source.category",
+            "id": "storefront",
+            "label_key": "$t:editor.data_source.storefront",
+            "comment": "보고 있는 분류와 그 분류의 상품 목록을 한 번에 받는다. 종전에는 분류·분류트리·상품목록으로 요청이 3번 나갔고, 그중 분류트리는 이 화면의 어떤 표현식도 읽지 않는 낭비였다. 각 묶음의 응답 형태는 개별 엔드포인트와 동일하다.",
             "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/categories/{{route.slug}}",
+            "endpoint": "/api/modules/sirsoft-ecommerce/storefront",
             "method": "GET",
-            "auto_fetch": true,
-            "loading_strategy": "progressive",
-            "fallback": {
-                "data": null
-            }
-        },
-        {
-            "id": "categories",
-            "label_key": "$t:editor.data_source.categories",
-            "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/categories",
-            "method": "GET",
-            "auto_fetch": true,
-            "loading_strategy": "progressive",
-            "fallback": {
-                "data": []
-            }
-        },
-        {
-            "id": "products",
-            "label_key": "$t:editor.data_source.products",
-            "type": "api",
-            "endpoint": "/api/modules/sirsoft-ecommerce/products",
-            "method": "GET",
+            "auth_mode": "optional",
             "params": {
                 "page": "{{query.page ?? 1}}",
                 "per_page": 12,
                 "category_slug": "{{route.slug}}",
                 "sort": "{{query.sort ?? 'latest'}}",
-                "search": "{{query.keyword ?? ''}}"
+                "search": "{{query.keyword ?? ''}}",
+                "popular_limit": 0,
+                "new_limit": 0
             },
             "auto_fetch": true,
+            "loading_strategy": "progressive",
             "fallback": {
-                "data": [],
-                "meta": {
-                    "current_page": 1,
-                    "last_page": 1,
-                    "per_page": 12,
-                    "total": 0
+                "data": {
+                    "category": null,
+                    "products": {
+                        "data": [],
+                        "pagination": {
+                            "current_page": 1,
+                            "last_page": null,
+                            "per_page": 12,
+                            "total": 0,
+                            "has_more_pages": false
+                        }
+                    }
                 }
             }
         }
@@ -118,7 +109,7 @@
                                             {
                                                 "type": "basic",
                                                 "name": "Icon",
-                                                "props": { "name": "arrow-left", "className": "w-5 h-5" }
+                                                "props": { "name": "arrow-left", "className": "text-xl" }
                                             }
                                         ],
                                         "actions": [
@@ -126,7 +117,7 @@
                                                 "type": "click",
                                                 "handler": "navigate",
                                                 "params": {
-                                                    "path": "{{(category?.data?.breadcrumb ?? []).length > 1 ? _global.shopBase + '/category/' + (category?.data?.breadcrumb ?? []).slice(-2, -1)[0]?.slug : _global.shopBase + '/products'}}"
+                                                    "path": "{{(storefront?.data?.category?.breadcrumb ?? []).length > 1 ? _global.shopBase + '/category/' + (storefront?.data?.category?.breadcrumb ?? []).slice(-2, -1)[0]?.slug : _global.shopBase + '/products'}}"
                                                 }
                                             }
                                         ]
@@ -134,7 +125,7 @@
                                     {
                                         "type": "basic",
                                         "name": "Span",
-                                        "text": "{{category?.data?.name_localized ?? $t:shop.categories}}"
+                                        "text": "{{storefront?.data?.category?.name_localized ?? $t:shop.categories}}"
                                     }
                                 ]
                             },
@@ -149,11 +140,11 @@
                                     {
                                         "type": "basic",
                                         "name": "P",
-                                        "if": "{{!!category?.data?.description_localized}}",
+                                        "if": "{{!!storefront?.data?.category?.description_localized}}",
                                         "props": {
                                             "className": "text-gray-600 dark:text-gray-400"
                                         },
-                                        "text": "{{category?.data?.description_localized ?? ''}}"
+                                        "text": "{{storefront?.data?.category?.description_localized ?? ''}}"
                                     },
                                     {
                                         "comment": "브레드크럼 (전체 > 경로 > 현재)",
@@ -176,7 +167,7 @@
                                                 "type": "basic",
                                                 "name": "Div",
                                                 "iteration": {
-                                                    "source": "{{category?.data?.breadcrumb ?? []}}",
+                                                    "source": "{{storefront?.data?.category?.breadcrumb ?? []}}",
                                                     "item_var": "crumb"
                                                 },
                                                 "children": [
@@ -192,7 +183,7 @@
                                                                 "name": "Icon",
                                                                 "props": {
                                                                     "name": "chevron-right",
-                                                                    "className": "w-3 h-3"
+                                                                    "className": "text-xs"
                                                                 }
                                                             },
                                                             {
@@ -228,7 +219,7 @@
                         "comment": "카테고리 배너 이미지",
                         "type": "basic",
                         "name": "Div",
-                        "if": "{{(category?.data?.images ?? []).length > 0}}",
+                        "if": "{{(storefront?.data?.category?.images ?? []).length > 0}}",
                         "props": {
                             "className": "mb-6 rounded-lg overflow-hidden"
                         },
@@ -237,8 +228,8 @@
                                 "type": "basic",
                                 "name": "Img",
                                 "props": {
-                                    "src": "{{category?.data?.images?.[0]?.download_url ?? ''}}",
-                                    "alt": "{{category?.data?.images?.[0]?.alt_text ?? category?.data?.name_localized ?? ''}}",
+                                    "src": "{{storefront?.data?.category?.images?.[0]?.download_url ?? ''}}",
+                                    "alt": "{{storefront?.data?.category?.images?.[0]?.alt_text ?? storefront?.data?.category?.name_localized ?? ''}}",
                                     "className": "w-full h-auto object-cover max-h-64"
                                 }
                             }
@@ -307,13 +298,13 @@
                         "comment": "하위 카테고리 칩 (자식 카테고리가 있을 때만 표시)",
                         "type": "basic",
                         "name": "Div",
-                        "if": "{{(category?.data?.children ?? []).length > 0}}",
+                        "if": "{{(storefront?.data?.category?.children ?? []).length > 0}}",
                         "props": { "className": "flex flex-wrap gap-2 mb-4" },
                         "children": [
                             {
                                 "type": "basic",
                                 "name": "Div",
-                                "iteration": { "source": "{{category?.data?.children ?? []}}", "item_var": "sub" },
+                                "iteration": { "source": "{{storefront?.data?.category?.children ?? []}}", "item_var": "sub" },
                                 "children": [
                                     {
                                         "type": "basic",
@@ -344,7 +335,7 @@
                                 "props": {
                                     "className": "text-sm font-semibold text-gray-700 dark:text-gray-300"
                                 },
-                                "text": "$t:shop.total_count|count={{products?.data?.pagination?.total ?? 0}}"
+                                "text": "$t:shop.total_count|count={{storefront?.data?.products?.pagination?.total ?? 0}}"
                             },
                             {
                                 "type": "composite",

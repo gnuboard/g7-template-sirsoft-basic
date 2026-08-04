@@ -77,7 +77,7 @@
           "type": "basic",
           "name": "Span",
           "props": { "className": "text-sm font-semibold text-gray-700 dark:text-gray-300" },
-          "text": "$t:shop.total_count|count={{products?.data?.pagination?.total ?? 0}}"
+          "text": "$t:shop.total_count|count={{storefront?.data?.products?.pagination?.total ?? 0}}"
         },
         {
           "comment": "오른쪽: 초기화 버튼 + 정렬",

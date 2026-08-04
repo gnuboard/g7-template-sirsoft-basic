@@ -1035,17 +1035,19 @@
           "comment": "페이지네이션",
           "type": "composite",
           "name": "Pagination",
-          "if": "{{orders.data.pagination.last_page > 1}}",
+          "if": "{{((orders.data.pagination.last_page ?? 0) > 1) || (orders.data.pagination.has_more_pages === true) || ((orders.data.pagination.current_page ?? 1) > 1)}}",
           "props": {
             "currentPage": "{{orders.data.pagination.current_page}}",
-            "totalPages": "{{orders.data.pagination.last_page}}",
+            "totalPages": "{{orders.data.pagination.last_page ?? null}}",
+            "hasMorePages": "{{orders.data.pagination.has_more_pages ?? false}}",
             "className": "mt-4"
           },
           "responsive": {
             "portable": {
               "props": {
                 "currentPage": "{{orders.data.pagination.current_page}}",
-                "totalPages": "{{orders.data.pagination.last_page}}",
+                "totalPages": "{{orders.data.pagination.last_page ?? null}}",
+                "hasMorePages": "{{orders.data.pagination.has_more_pages ?? false}}",
                 "className": "mt-3"
               }
             }
