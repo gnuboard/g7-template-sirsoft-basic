@@ -141,7 +141,8 @@
     "laugh": "Funny",
     "agree": "Agree",
     "thanks": "Thanks",
-    "wow": "Wow"
+    "wow": "Wow",
+    "login_required": "You need to sign in to use this feature."
   },
   "attachments": {
     "title": "Attachments",

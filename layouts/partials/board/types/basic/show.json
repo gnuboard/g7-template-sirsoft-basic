@@ -928,6 +928,121 @@
           ]
         },
         {
+          "comment": "게시글 반응(추천/비추천) 영역 — 반응 사용 on + 게시판이 켠 유형이 1개 이상일 때만 노출(확정 11). 활성 유형을 iteration 으로 순회해 유형별 버튼(아이콘+라벨+개수, 개수 0도 항상 노출, 확정 09). 본인 글은 버튼/개수는 노출하되 클릭 불가(확정 08). 비로그인은 안내 후 로그인 유도, 로그인 사용자는 같은 유형 재클릭=해제·다른 유형=전환.",
+          "type": "basic",
+          "name": "Div",
+          "if": "{{post?.data?.board?.use_reaction && (post?.data?.board?.reaction_type_options ?? []).length > 0}}",
+          "props": {
+            "className": "flex flex-wrap items-center gap-2 px-6 py-4 border-t border-gray-200 dark:border-gray-700"
+          },
+          "children": [
+            {
+              "type": "basic",
+              "name": "Div",
+              "iteration": {
+                "source": "{{post?.data?.board?.reaction_type_options ?? []}}",
+                "item_var": "reactionType",
+                "index_var": "reactionIdx"
+              },
+              "children": [
+                {
+                  "comment": "반응 유형 버튼 — my_reaction_type_id 와 일치하면 하이라이트, 본인 글이면 비활성화",
+                  "type": "basic",
+                  "name": "Button",
+                  "props": {
+                    "type": "button",
+                    "disabled": "{{post?.data?.is_author === true}}",
+                    "className": "{{post?.data?.my_reaction_type_id === reactionType.id ? 'px-4 py-2 text-sm border border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg flex items-center gap-1.5 font-medium transition-colors' : 'px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5'}}{{post?.data?.is_author ? ' cursor-not-allowed opacity-60' : ' cursor-pointer'}}"
+                  },
+                  "actions": [
+                    {
+                      "type": "click",
+                      "handler": "switch",
+                      "params": {
+                        "value": "{{_global.currentUser?.uuid ? 'logged_in' : 'not_logged_in'}}"
+                      },
+                      "cases": {
+                        "logged_in": {
+                          "handler": "apiCall",
+                          "target": "/api/modules/sirsoft-board/boards/{{route.slug}}/posts/{{route.id}}/react",
+                          "auth_mode": "required",
+                          "params": {
+                            "method": "POST",
+                            "body": {
+                              "reaction_type_id": "{{reactionType.id}}"
+                            }
+                          },
+                          "onSuccess": [
+                            {
+                              "handler": "refetchDataSource",
+                              "params": {
+                                "dataSourceId": "post"
+                              }
+                            }
+                          ],
+                          "onError": [
+                            {
+                              "handler": "toast",
+                              "params": {
+                                "type": "error",
+                                "message": "{{error.message}}"
+                              }
+                            }
+                          ]
+                        },
+                        "not_logged_in": {
+                          "handler": "sequence",
+                          "actions": [
+                            {
+                              "handler": "toast",
+                              "params": {
+                                "type": "info",
+                                "message": "$t:board.reaction.login_required"
+                              }
+                            },
+                            {
+                              "handler": "navigate",
+                              "params": {
+                                "path": "/login",
+                                "query": {
+                                  "redirect": "/board/{{route.slug}}/{{route.id}}"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "basic",
+                      "name": "Icon",
+                      "props": {
+                        "name": "{{reactionType.icon_name ?? 'fa-thumbs-up'}}",
+                        "size": "sm"
+                      }
+                    },
+                    {
+                      "type": "basic",
+                      "name": "Span",
+                      "text": "{{reactionType.name ?? ''}}"
+                    },
+                    {
+                      "type": "basic",
+                      "name": "Span",
+                      "props": {
+                        "className": "tabular-nums"
+                      },
+                      "text": "{{post?.data?.reaction_counts?.[reactionType.id] ?? 0}}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
           "comment": "게시글 액션 버튼 영역 (답변, 신고, 수정, 삭제) - 비회원 글은 항상 표시 (수정/삭제용)",
           "type": "basic",
           "name": "Div",
