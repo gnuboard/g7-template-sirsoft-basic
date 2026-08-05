@@ -940,7 +940,7 @@
               "comment": "반응(추천/비추천) 영역 — 반응 사용 on + 게시판이 켠 유형이 1개 이상일 때만 노출(확정 11). 활성 유형을 iteration 으로 순회해 유형별 버튼(아이콘+라벨+개수, 개수 0도 항상 노출, 확정 09). 본인 글은 버튼/개수는 노출하되 클릭 불가(확정 08). 비로그인은 안내 후 로그인 유도, 로그인 사용자는 같은 유형 재클릭=해제·다른 유형=전환.",
               "type": "basic",
               "name": "Div",
-              "if": "{{post?.data?.board?.use_reaction && (post?.data?.board?.reaction_type_options ?? []).length > 0}}",
+              "if": "{{post?.data?.board?.use_reaction && (post?.data?.board?.reaction_type_options ?? []).length > 0 && (!post?.data?.is_secret || post?.data?.content !== null)}}",
               "props": {
                 "className": "flex flex-wrap items-center gap-2"
               },
@@ -955,13 +955,13 @@
               },
               "children": [
                 {
-                  "comment": "반응 유형 버튼 — 하이라이트는 클릭 즉시 이동(_local.myReactionTypeId override, 없으면 서버값), 개수는 react API 응답의 reaction_counts 로 갱신(_local.reactionCounts override). 처리 중(_local.reactingTypeId)은 짧은 로딩(스피너+비활성). 실패 시 override 를 클릭 전 값으로 롤백. 본인 글은 항상 비활성.",
+                  "comment": "반응 유형 버튼 — 하이라이트는 클릭 즉시 이동(_local.myReactionTypeId override, 없으면 서버값), 개수는 react API 응답의 reaction_counts 로 갱신(_local.reactionCounts override). 처리 중(_local.reactingTypeId)은 짧은 로딩(스피너+비활성). 실패 시 override 를 클릭 전 값으로 롤백. 본인 글은 항상 비활성. 활성 상태는 배경색+테두리+하단 밑줄로 표시(상시 확대는 제거 — 부자연스럽다는 PO 피드백). 클릭하는 순간에만 active:scale-95 로 살짝 눌리는 촉각 피드백을 주며, 손을 떼면 즉시 원래 크기로 복귀(순수 CSS :active 의사클래스, 상태 관리 불필요).",
                   "type": "basic",
                   "name": "Button",
                   "props": {
                     "type": "button",
                     "disabled": "{{post?.data?.is_author === true || (_local?.reactingTypeId ?? null) !== null}}",
-                    "className": "{{(_local?.reactionApplied ? _local?.myReactionTypeId : post?.data?.my_reaction_type_id) === reactionType.id ? 'px-4 py-2 text-sm border border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg flex items-center gap-1.5 font-medium transition-colors' : 'px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5'}}{{(post?.data?.is_author || (_local?.reactingTypeId ?? null) !== null) ? ' cursor-not-allowed opacity-60' : ' cursor-pointer'}}"
+                    "className": "{{(_local?.reactionApplied ? _local?.myReactionTypeId : post?.data?.my_reaction_type_id) === reactionType.id ? 'px-4 py-2 text-sm border border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg flex items-center gap-1.5 font-medium active:scale-95 transition-transform duration-150 ease-out' : 'px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5 active:scale-95 transition-transform duration-150 ease-out'}}{{(post?.data?.is_author || (_local?.reactingTypeId ?? null) !== null) ? ' cursor-not-allowed opacity-60' : ' cursor-pointer'}}"
                   },
                   "actions": [
                     {

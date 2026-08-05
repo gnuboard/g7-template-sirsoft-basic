@@ -58,6 +58,19 @@ describe('이슈 #525 — 게시글 상세 반응 버튼 (basic/show.json)', () 
         expect(area.if as string).toContain('length > 0');
     });
 
+    // @scenario case=reaction_area_hidden_on_inaccessible_secret_post
+    // @effects reaction_area_hidden_when_secret_content_inaccessible
+    it('비밀글이면서 본문 열람 권한이 없으면(content=null) 반응 영역이 미노출된다 (신고와 동일 가드)', () => {
+        // 비밀글 본문을 못 보는 사용자가 반응만 남기는 우회를 막는다.
+        // 신고 버튼과 동일한 (!is_secret || content !== null) 가드를 반응 영역 if 에도 둔다.
+        const areas = findByComment(basicShow, '반응(추천/비추천) 영역 — 반응 사용 on');
+        expect(areas.length).toBe(1);
+
+        const cond = areas[0].if as string;
+        expect(cond).toContain('is_secret');
+        expect(cond).toContain('content !== null');
+    });
+
     // @scenario case=detail_shows_active_types_even_zero
     // @effects active_types_always_shown_even_zero_count
     it('반응 유형을 reaction_type_options 로 iteration 한다', () => {
@@ -184,5 +197,40 @@ describe('이슈 #525 — 게시글 상세 반응 버튼 (basic/show.json)', () 
         const iconProps = icon.props as Record<string, unknown>;
         expect(String(iconProps.name)).toContain('fa-spinner');
         expect(String(iconProps.spin)).toContain('reactingTypeId');
+    });
+
+    // @scenario case=reaction_active_button_color_only_highlight
+    // @effects reaction_active_button_color_highlight, reaction_click_moment_tactile_pulse
+    it('활성 상태는 배경·테두리 색상으로만 표시하고, 클릭 순간에는 두 분기 모두 active:scale-95 로 살짝 눌린다 (상시 확대 제거)', () => {
+        const areas = findByComment(basicShow, '반응(추천/비추천) 영역 — 반응 사용 on');
+        const buttons = collectNodes(areas[0], (n) => n.name === 'Button');
+        const btn = buttons[0];
+        const props = btn.props as Record<string, unknown>;
+        const className = String(props.className);
+
+        // 표현식 전체를 감싸는 최상위 삼항 " ? '...' : '...' " 만 분리 —
+        // 조건절 내 옵셔널 체이닝(?.)과 혼동하지 않도록 "? '" 패턴으로 삼항 시작점을 찾는다
+        const ternaryStart = className.indexOf("? '") + 1;
+        const ternaryBody = className.slice(ternaryStart + 1);
+        const [activeBranch, inactiveBranch] = ternaryBody.split(" : '");
+
+        // 활성(참) 분기: 색상만으로 하이라이트, 상시 확대(scale-105)·그림자(shadow-md) 없음
+        expect(activeBranch).toContain('bg-blue-50');
+        expect(activeBranch).toContain('border-blue-500');
+        expect(activeBranch).not.toContain('scale-105');
+        expect(activeBranch).not.toContain('shadow-md');
+
+        // 비활성(거짓) 분기도 상시 축소(scale-95 상태 유지)·불투명도 저하 없음
+        expect(inactiveBranch).not.toContain('opacity-90');
+
+        // 두 분기 모두 클릭 순간(:active 의사클래스)에만 살짝 눌리는 순수 CSS 펄스
+        expect(activeBranch).toContain('active:scale-95');
+        expect(inactiveBranch).toContain('active:scale-95');
+
+        // transform 전환은 부드럽게 (transition-transform + duration-150)
+        expect(activeBranch).toContain('transition-transform');
+        expect(activeBranch).toContain('duration-150');
+        expect(inactiveBranch).toContain('transition-transform');
+        expect(inactiveBranch).toContain('duration-150');
     });
 });
