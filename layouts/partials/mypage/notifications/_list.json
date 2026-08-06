@@ -374,17 +374,19 @@
           "comment": "페이지네이션",
           "type": "composite",
           "name": "Pagination",
-          "if": "{{userNotifications.data.last_page > 1}}",
+          "if": "{{((userNotifications.data.last_page ?? 0) > 1) || (userNotifications.data.has_more_pages === true) || ((userNotifications.data.current_page ?? 1) > 1)}}",
           "props": {
             "currentPage": "{{userNotifications.data.current_page}}",
-            "totalPages": "{{userNotifications.data.last_page}}",
+            "totalPages": "{{userNotifications.data.last_page ?? null}}",
+            "hasMorePages": "{{userNotifications.data.has_more_pages ?? false}}",
             "className": "p-4 border-t border-gray-200 dark:border-gray-700"
           },
           "responsive": {
             "portable": {
               "props": {
                 "currentPage": "{{userNotifications.data.current_page}}",
-                "totalPages": "{{userNotifications.data.last_page}}",
+                "totalPages": "{{userNotifications.data.last_page ?? null}}",
+                "hasMorePages": "{{userNotifications.data.has_more_pages ?? false}}",
                 "className": "p-3 border-t border-gray-200 dark:border-gray-700"
               }
             }

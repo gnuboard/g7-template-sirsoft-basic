@@ -472,7 +472,8 @@
                         "name": "Pagination",
                         "props": {
                           "currentPage": "{{userPosts.data?.current_page ?? 1}}",
-                          "totalPages": "{{userPosts.data?.last_page ?? 1}}"
+                          "totalPages": "{{userPosts.data?.last_page ?? null}}",
+                          "hasMorePages": "{{userPosts.data?.has_more_pages ?? false}}"
                         },
                         "actions": [
                           {
