@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -19,7 +19,12 @@ describe('게시판 스킨 — 블라인드 아이콘 색 패리티', () => {
     '../../layouts/partials/board/types'
   );
 
-  const skins = ['basic', 'card', 'gallery'];
+  // 스킨을 열거하지 않고 디렉토리에서 도출한다. 열거하면 스킨이 늘어날 때 그 스킨만
+  // 조용히 검사 밖에 남아, 처음 이 결함이 갤러리에서만 났던 상황이 그대로 재현된다.
+  const skins = readdirSync(typesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && existsSync(resolve(typesDir, entry.name, 'index.json')))
+    .map((entry) => entry.name)
+    .sort();
 
   /**
    * 스킨 레이아웃에서 eye-slash 아이콘의 className 을 모두 뽑아냅니다.
@@ -34,6 +39,13 @@ describe('게시판 스킨 — 블라인드 아이콘 색 패리티', () => {
 
     return found;
   };
+
+  it('스킨 디렉토리에서 모집단이 도출된다', () => {
+    // 디렉토리 스캔이 빗나가면 skins 가 비고, 아래 단언들은 루프를 돌지 않아 전부 통과한다.
+    // 모집단 자체를 먼저 고정해 그 조용한 통과를 막는다.
+    expect(skins.length, '발견된 게시판 스킨').toBeGreaterThanOrEqual(3);
+    expect(skins).toContain('gallery');
+  });
 
   it('모든 스킨에 블라인드 아이콘이 존재한다', () => {
     // 모집단이 비면 아래 단언이 조용히 통과한다.

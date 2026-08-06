@@ -1,11 +1,11 @@
 {
   "meta": {
     "is_partial": true,
-    "description": "인기 상품 섹션. 데이터소스 이름에 직접 결합하지 않고 부모 레이아웃이 정의한 $computed.popularItems 를 읽는다 (shop/index 와 shop/show 가 함께 쓰는 partial)"
+    "description": "인기 상품 섹션"
   },
   "type": "basic",
   "name": "Div",
-  "if": "{{($computed.popularItems ?? []).length > 0}}",
+  "if": "{{popularProducts.data && popularProducts.data.length > 0}}",
   "isolatedState": {
     "scrollIdx": 0
   },
@@ -69,20 +69,20 @@
               "type": "basic",
               "name": "Button",
               "props": {
-                "className": "{{(_isolated.scrollIdx + 4) >= (($computed.popularItems ?? []).length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
-                "disabled": "{{(_isolated.scrollIdx + 4) >= (($computed.popularItems ?? []).length)}}"
+                "className": "{{(_isolated.scrollIdx + 4) >= (popularProducts.data.length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
+                "disabled": "{{(_isolated.scrollIdx + 4) >= (popularProducts.data.length)}}"
               },
               "responsive": {
                 "0-639": {
                   "props": {
-                    "className": "{{(_isolated.scrollIdx + 2) >= (($computed.popularItems ?? []).length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
-                    "disabled": "{{(_isolated.scrollIdx + 2) >= (($computed.popularItems ?? []).length)}}"
+                    "className": "{{(_isolated.scrollIdx + 2) >= (popularProducts.data.length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
+                    "disabled": "{{(_isolated.scrollIdx + 2) >= (popularProducts.data.length)}}"
                   }
                 },
                 "640-1023": {
                   "props": {
-                    "className": "{{(_isolated.scrollIdx + 3) >= (($computed.popularItems ?? []).length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
-                    "disabled": "{{(_isolated.scrollIdx + 3) >= (($computed.popularItems ?? []).length)}}"
+                    "className": "{{(_isolated.scrollIdx + 3) >= (popularProducts.data.length) ? 'p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'}}",
+                    "disabled": "{{(_isolated.scrollIdx + 3) >= (popularProducts.data.length)}}"
                   }
                 }
               },
@@ -125,7 +125,7 @@
         {
           "type": "basic",
           "name": "Div",
-          "iteration": { "source": "{{$computed.popularItems ?? []}}", "item_var": "product", "index_var": "idx" },
+          "iteration": { "source": "{{popularProducts.data ?? []}}", "item_var": "product", "index_var": "idx" },
           "props": {
             "id": "popular-product-{{idx}}"
           },

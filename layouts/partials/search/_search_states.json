@@ -118,7 +118,7 @@
       "comment": "검색 결과 없음 (전체 탭)",
       "type": "basic",
       "name": "Div",
-      "if": "{{query?.q && searchResults?.data && (searchResults?.data?.total ?? 0) === 0 && (_global.searchActiveTab ?? 'all') === 'all'}}",
+      "if": "{{query?.q && searchResults?.data && (searchResults?.data?.total ?? 0) === 0 && (query?.type ?? 'all') === 'all'}}",
       "props": { "className": "py-16 text-center" },
       "children": [
         {
