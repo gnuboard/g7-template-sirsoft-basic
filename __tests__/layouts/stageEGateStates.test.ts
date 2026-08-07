@@ -57,7 +57,9 @@ function item(group: any, id: string): any {
 }
 
 describe('단계 E — 상품상세 리뷰/문의 탭 게이트 상태', () => {
-  const g = ecomGroup('/shop/products/:id');
+  // scope 는 상점 주소 설정과 무관한 선택 세그먼트 토큰 + routes.json 의 실제 파라미터명을 쓴다
+  // (engine-v1.58.0 `/*?`, 파라미터는 `:product_code`).
+  const g = ecomGroup('/*?/products/:product_code');
 
   it('reviews_tab / qna_tab 상태가 등록되어 있다', () => {
     expect(item(g, 'reviews_tab')).toBeTruthy();
@@ -196,14 +198,14 @@ describe('단계 E — 통합검색 서브탭 게이트 상태 + posts/pages 본
 
 describe('단계 E — 주문서/장바구니 금액 상세 토글 게이트 상태', () => {
   it('/shop/checkout summary_details_expanded 가 두 토글을 ON 한다 (게이트 경로)', () => {
-    const it0 = item(ecomGroup('/shop/checkout'), 'summary_details_expanded');
+    const it0 = item(ecomGroup('/*?/checkout'), 'summary_details_expanded');
     expect(it0).toBeTruthy();
     expect(it0.initialState?.local?.showTaxDetails).toBe(true);
     expect(it0.initialState?.local?.showDiscountDetails).toBe(true);
   });
 
   it('/shop/cart summary_tax_expanded 가 세금 토글 + 선택상품을 ON 한다 (이중 중첩 게이트)', () => {
-    const it0 = item(ecomGroup('/shop/cart'), 'summary_tax_expanded');
+    const it0 = item(ecomGroup('/*?/cart'), 'summary_tax_expanded');
     expect(it0).toBeTruthy();
     // 세금 상세는 selectedItems.length>0 게이트 안에 showTaxDetails 토글로 이중 중첩.
     expect(it0.initialState?.local?.showTaxDetails).toBe(true);
