@@ -85,7 +85,7 @@ describe('이슈 #525 — 게시글 상세 반응 버튼 (basic/show.json)', () 
 
     // @scenario case=author_buttons_disabled
     // @effects author_sees_buttons_disabled, active_types_always_shown_even_zero_count, my_reaction_type_highlighted
-    it('유형별 버튼은 본인 글이면 disabled 이고 개수를 바인딩한다 (확정 08·09)', () => {
+    it('유형별 버튼은 처리 중이면 disabled, 본인 글이면 시각적 비활성 톤 + 클릭 시 안내(disabled 미부여)로 개수를 바인딩한다 (확정 08·09)', () => {
         const areas = findByComment(basicShow, '반응(추천/비추천) 영역 — 반응 사용 on');
         const buttons = collectNodes(areas[0], (n) => n.name === 'Button');
         expect(buttons.length).toBeGreaterThan(0);
@@ -93,7 +93,14 @@ describe('이슈 #525 — 게시글 상세 반응 버튼 (basic/show.json)', () 
         const btn = buttons[0];
         const props = btn.props as Record<string, unknown>;
         expect(props.type).toBe('button');
-        expect(String(props.disabled)).toContain('is_author');
+        // disabled 는 처리 중(reactingTypeId)에만 건다 — disabled 버튼은 클릭 이벤트가
+        // 발생하지 않아 본인 글 안내 토스트를 띄울 수 없으므로, 본인 글은 disabled 대신
+        // className 의 시각적 톤 + switch 핸들러의 self_post 분기로 처리한다.
+        expect(String(props.disabled)).toContain('reactingTypeId');
+        expect(String(props.disabled)).not.toContain('is_author');
+        expect(String(props.className)).toContain('is_author');
+        expect(String(props['aria-pressed'])).toBeTruthy();
+        expect(String(props['aria-disabled'])).toContain('reactingTypeId');
 
         // 개수 바인딩 (reaction_counts[유형 ID] ?? 0)
         const counts = collectNodes(btn, (n) =>

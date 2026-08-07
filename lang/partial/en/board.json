@@ -143,7 +143,8 @@
     "thanks": "Thanks",
     "wow": "Wow",
     "login_required": "You need to sign in to use this feature.",
-    "failed": "Failed to process the reaction. Please try again."
+    "failed": "Failed to process the reaction. Please try again.",
+    "self_post_denied": "You cannot react to your own post."
   },
   "attachments": {
     "title": "Attachments",
