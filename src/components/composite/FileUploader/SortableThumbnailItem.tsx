@@ -156,9 +156,9 @@ export const SortableThumbnailItem: React.FC<SortableThumbnailItemProps> = ({
         {/* 업로드/압축 진행률 오버레이 */}
         {(isUploading || isCompressing) && (
           <Div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-            <Div className="w-3/4 h-2 bg-gray-700 rounded-full overflow-hidden">
+            <Div className="w-3/4 h-2 bg-gray-700 dark:bg-gray-600 rounded-full overflow-hidden">
               <Div
-                className="h-full bg-blue-500 transition-all"
+                className="h-full bg-blue-500 dark:bg-blue-400 transition-all"
                 style={{ width: `${progress}%` }}
               />
             </Div>
@@ -168,7 +168,7 @@ export const SortableThumbnailItem: React.FC<SortableThumbnailItemProps> = ({
 
         {/* 에러 오버레이 */}
         {hasError && (
-          <Div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+          <Div className="absolute inset-0 bg-red-500/50 dark:bg-red-600/50 flex items-center justify-center">
             <I className="fa-solid fa-exclamation-triangle text-2xl text-white" />
           </Div>
         )}
