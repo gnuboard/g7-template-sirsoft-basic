@@ -1,3 +1,6 @@
+// @scenario board-blinded-original-access
+// (매니페스트 소속 표기 — 회차 16 W6: 선언된 파일은 마킹을 최소 1개 가진다)
+
 /**
  * @file board-blinded-original-access.test.tsx
  * @description 블라인드 게시글/댓글 '원글 보기' 게이트 회귀 (이슈 #413-34)
@@ -10,10 +13,6 @@
  *
  * 회귀 배경: 과거에는 백엔드가 content 를 권한 무관하게 응답 →
  *   누구나 '원글 보기' 로 원문 열람 가능 (보안 결함). 백엔드 차단 + 본 게이트로 방어.
- *
- * @effects blinded_content_null_for_guest,
- *   blinded_content_null_for_other_member,
- *   blinded_comment_content_matrix
  */
 
 import { describe, it, expect } from 'vitest';
