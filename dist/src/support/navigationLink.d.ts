@@ -28,28 +28,20 @@ export declare function mergeQueryIntoHref(href: string): string;
 /**
  * 렌더할 때 현재 쿼리를 href 에 합치는 컴포넌트가 주소 검색부를 구독합니다(`mergeQuery`·`pageHrefMergeQuery` 등).
  *
- * 구독 규칙은 코어 한 곳(`G7Core.navigation.useLocationSearch`, engine-v1.83.0)에 있다 — 템플릿은 코어와 같은 React 를
- * 쓰므로 그 훅을 그대로 부른다. 그 훅이 없는 옛 코어에서만 짧은 대체로 동작한다. 코어 유무는 렌더 사이에 바뀌지 않으므로
- * 어느 쪽이든 렌더마다 훅 하나(`useSyncExternalStore`)를 같은 순서로 부른다.
+ * 같은 화면에서 쿼리만 바꾸는 `navigate replace` 는 화면을 다시 마운트하지 않고, 링크 props 도 그대로라 엔진이 그 링크를
+ * 다시 그리지 않는다 — 그러면 가운데 클릭·Ctrl+클릭·새 탭·주소 복사가 옛 쿼리로 간다. 검색부가 바뀌면 이 훅이 다시 그린다.
+ * `enabled` 가 거짓이면 구독하지 않는다(쿼리를 합치지 않는 링크의 렌더 비용은 그대로).
  *
  * @param enabled 현재 쿼리를 href 에 합치면 true
  * @return 현재 주소 검색부(`?a=1`, 구독하지 않으면 '')
  */
 export declare function useLocationSearch(enabled: boolean): string;
 /**
- * 현재 주소 경로를 구독합니다 — 화면을 옮겨도 다시 마운트되지 않는 머리글·서랍이 경로로 상태를 정할 때 쓴다.
- * 구독 경로는 {@link useLocationSearch} 의 옛 코어 대체와 같다(엔진 주소 교체 알림, 없으면 뒤로/앞으로).
- *
- * @param enabled 구독하면 true
- * @return 현재 경로(`/search`, 구독하지 않으면 '')
- */
-export declare function useLocationPath(enabled: boolean): string;
-/**
  * 링크로 그려도 되는 주소인지 판정해 href 값을 돌려줍니다.
  *
  * - 빈 값·`#`·실행 스킴(`javascript:` 등)은 링크가 아니다 → null
- * - 내부 링크 판정은 코어 한 곳({@link isInternalLink} → `G7Core.navigation.resolveInternalHref`) — `/` 경로와 같은 출처
- *   주소가 내부 링크이고, 같은 출처라도 경로가 `//` 로 시작하면(엔진 navigate 가 거부하는 주소) 내부 링크가 아니다
+ * - `/` 하나로 시작하는 경로(`//`·`/\` 제외)와 같은 출처 주소는 내부 링크 — 단 같은 출처라도 경로가 `//` 로
+ *   시작하면(엔진 navigate 가 거부하는 주소) 내부 링크가 아니다
  * - `http(s)://` 바깥 주소는 바깥 링크(새 탭으로 연다)
  *
  * @param url 메뉴·항목 데이터의 주소
