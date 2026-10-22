@@ -296,10 +296,6 @@
                         {
                             "type": "basic",
                             "name": "Span",
-                            "blur_until_loaded": {
-                                "enabled": true,
-                                "data_sources": "myActivityStats"
-                            },
                             "props": {
                                 "className": "ml-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full"
                             },
@@ -354,10 +350,6 @@
                         {
                             "type": "basic",
                             "name": "Span",
-                            "blur_until_loaded": {
-                                "enabled": true,
-                                "data_sources": "myActivityStats"
-                            },
                             "props": {
                                 "className": "ml-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full"
                             },
@@ -413,10 +405,6 @@
                         {
                             "type": "basic",
                             "name": "Span",
-                            "blur_until_loaded": {
-                                "enabled": true,
-                                "data_sources": "myActivityStats"
-                            },
                             "props": {
                                 "className": "ml-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full"
                             },
@@ -472,10 +460,6 @@
                         {
                             "type": "basic",
                             "name": "Span",
-                            "blur_until_loaded": {
-                                "enabled": true,
-                                "data_sources": "myActivityStats"
-                            },
                             "props": {
                                 "className": "ml-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full"
                             },

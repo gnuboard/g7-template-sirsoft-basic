@@ -18,9 +18,11 @@ import React, { useState, useRef, useEffect, useId } from 'react';
 // 기본 컴포넌트 import
 import { Div } from '../basic/Div';
 import { Button } from '../basic/Button';
+import { Input } from '../basic/Input';
 import { Span } from '../basic/Span';
 import { Img } from '../basic/Img';
 import { Icon } from '../basic/Icon';
+import { Form } from '../basic/Form';
 import { Nav } from '../basic/Nav';
 import { Header as HeaderBasic } from '../basic/Header';
 import { Hr } from '../basic/Hr';
@@ -35,9 +37,6 @@ import { Avatar } from './Avatar';
 
 // SlotContainer — 헤더 통화 등 모듈 주입 UI 를 떙겨 렌더 (헤더는 주입 모듈을 모름)
 import { SlotContainer } from './SlotContainer';
-
-// RecentSearchCombobox — 최근 검색어 펼침 목록을 가진 검색창
-import { RecentSearchCombobox } from './RecentSearchCombobox';
 
 // NotificationCenter 컴포넌트 import
 import { NotificationCenter, type NotificationItem } from './NotificationCenter';
@@ -76,13 +75,6 @@ interface HeaderProps {
   siteName?: string;
   /** 현재 로그인된 사용자 */
   user?: User | null;
-  /**
-   * 로그인 사용자 정보를 받는 중인가 — true 면 사용자 메뉴 자리에 빈 자리(회색 원 + 이름 막대)를 그리고
-   * 로그인·회원가입·주문조회·사용자 메뉴는 그리지 않는다(이름 길이에 따라 받은 뒤 폭이 조금 달라질 수 있다). 레이아웃이 `{{_global.currentUser === undefined}}` 로 넘긴다.
-   * 받는 중을 비회원으로 읽으면 회원이 새로고침할 때 「로그인·회원가입」이 잠깐 보였다가 바뀌고 검색창이 출렁였다(#915).
-   * 기본값 false — 편집기 미리보기·바인딩이 없는 옛 레이아웃은 지금처럼 그린다.
-   */
-  userLoading?: boolean;
   /** 장바구니 아이템 수 */
   cartCount?: number;
   /** 읽지 않은 알림 수 */
@@ -99,30 +91,6 @@ interface HeaderProps {
   currentLocale?: string;
   /** 쇼핑몰 기본 경로 (예: "/shop", "/") */
   shopBase?: string;
-  /**
-   * 게시판 모듈이 켜져 있는가 — false 면 「인기글」 탭과 게시판 탭·더보기를 그리지 않는다.
-   * 기본값 true: 레이아웃이 `_global.activeModules` 로 판정해 넘긴다. 값이 오지 않는 경우(루트 레이아웃을 keep 으로
-   * 업데이트해 새 바인딩이 없는 사이트)에는 지금처럼 보인다(#822).
-   */
-  boardEnabled?: boolean;
-  /** 쇼핑몰 모듈이 켜져 있는가 — false 면 장바구니 단추·「쇼핑」 탭·회원 메뉴의 주문내역·위시리스트·비회원 「주문조회」를 그리지 않는다. 기본값 true(위와 같은 이유) */
-  shopEnabled?: boolean;
-  /** 검색칸을 그리는가 — 레이아웃은 게시판·쇼핑몰·페이지 중 하나라도 켜져 있으면 true 를 넘긴다(검색 공급자가 없으면 숨김). 기본값 true */
-  searchEnabled?: boolean;
-  /**
-   * 검색칸의 최근 검색어 범위 — 같은 범위를 쓰는 검색창(모바일 서랍·통합검색 화면)과 목록을 공유한다.
-   * 기본값 `core.site`(코어 통합검색). 엔진이 그 범위를 쓸 수 없다고 답하면 펼침 목록 없이 평범한 검색칸이다
-   */
-  searchHistoryScope?: string;
-  /**
-   * 봇 화면(seo-config header_nav)의 「쇼핑」 링크 주소(예: "/shop/products") — 이 컴포넌트는 읽지 않는다(화면은 shopBase 로 만든다).
-   * 옛 코어(7.1.3 이하)의 봇 렌더가 `{shopBase}/products` 같은 섞인 attrs 패턴을 치환하지 못해 레이아웃이 완성된 주소를 넘긴다.
-   */
-  shopProductsHref?: string;
-  /**
-   * 봇 화면(seo-config header_nav)의 「리뷰」 링크 주소(예: "/shop/reviews") — 이 컴포넌트는 읽지 않는다(화면은 shopBase 로 만든다)
-   */
-  shopReviewsHref?: string;
   /** 추가 CSS 클래스 */
   className?: string;
   /** 레이아웃 편집기 식별 속성(data-editor-*) — 시각적 루트에 spread */
@@ -196,7 +164,6 @@ const Header: React.FC<HeaderProps> = ({
   logo,
   siteName = '그누보드7',
   user,
-  userLoading = false,
   cartCount = 0,
   notificationCount = 0,
   boards = [],
@@ -205,10 +172,6 @@ const Header: React.FC<HeaderProps> = ({
   availableLocales = [],
   currentLocale = 'ko',
   shopBase = '/shop',
-  boardEnabled = true,
-  shopEnabled = true,
-  searchEnabled = true,
-  searchHistoryScope = 'core.site',
   className = '',
   editorAttrs,
   // 알림센터
@@ -231,6 +194,7 @@ const Header: React.FC<HeaderProps> = ({
   onNotificationDelete,
   onNotificationUnreadOnlyToggle,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMoreBoards, setShowMoreBoards] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -291,12 +255,6 @@ const Header: React.FC<HeaderProps> = ({
            currentPath.startsWith(`${base}/category`);
   };
 
-  // 리뷰 모아보기 화면인지
-  const isReviewsActive = (): boolean => {
-    const base = shopBase === '/' ? '' : shopBase;
-    return currentPath.startsWith(`${base}/reviews`);
-  };
-
   // 네비게이션 버튼 스타일
   const getNavButtonClass = (isActive: boolean): string => {
     const baseClass = 'px-3 py-2 text-sm font-medium whitespace-nowrap cursor-pointer rounded-lg transition-colors';
@@ -323,14 +281,14 @@ const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 게시판 모듈이 꺼져 있으면 게시판 탭·더보기를 비운다(목록이 남아 있어도 — 옛 응답이 캐시에 남은 경우)
-  const navBoards = boardEnabled ? boards : [];
-  const visibleBoards = navBoards.slice(0, maxVisibleBoards);
-  const hiddenBoards = navBoards.slice(maxVisibleBoards);
+  const visibleBoards = boards.slice(0, maxVisibleBoards);
+  const hiddenBoards = boards.slice(maxVisibleBoards);
 
-  // 검색 — 최근 검색어 기록은 검색창이 기다리지 않고 맡고, 여기서는 통합검색 화면으로만 옮긴다
-  const handleSearch = (keyword: string) => {
-    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
   };
 
   const handleLogout = async () => {
@@ -441,18 +399,23 @@ const Header: React.FC<HeaderProps> = ({
             )}
           </LinkButton>
 
-          {/* 검색바 (데스크톱 전용) — 검색 공급자가 하나도 없으면(searchEnabled=false) 숨긴다 */}
-          {!isMobile && searchEnabled && (
-            <RecentSearchCombobox
-              data-testid="header-search"
-              scope={searchHistoryScope || 'core.site'}
-              name="q"
-              resultPath="/search"
-              placeholder={t('common.search_placeholder')}
-              onSearch={handleSearch}
-              className="flex basis-lg min-w-48 max-w-lg mx-8"
-              inputClassName="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+          {/* 검색바 (데스크톱 전용) */}
+          {!isMobile && (
+            <Form onSubmit={handleSearch} className="flex basis-lg min-w-48 max-w-lg mx-8">
+              <Div className="relative w-full">
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('common.search_placeholder')}
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <Icon
+                  name="search"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400"
+                />
+              </Div>
+            </Form>
           )}
 
           {/* 우측 액션 버튼들 — 회원 이름만 줄어들 수 있고(최소 3rem) 나머지 단추는 제 폭을 지킨다. 줄어드는 몫은 로고와 이 묶음이
@@ -465,10 +428,8 @@ const Header: React.FC<HeaderProps> = ({
               darkText={t('common.theme.dark')}
             />
 
-            {/* 알림센터 드롭다운 — 로그인 사용자에게만 노출. 사용자 정보를 받는 동안에는 같은 크기의 빈 자리(받은 뒤 회원이면
-                종 단추가 같은 크기로 들어온다 — 받는 사람은 사실상 회원뿐이다) */}
-            {userLoading && <Span aria-hidden="true" className="block w-9 h-9" data-skeleton="notification" />}
-            {!userLoading && user?.uuid && (
+            {/* 알림센터 드롭다운 — 로그인 사용자에게만 노출 */}
+            {user?.uuid && (
               <NotificationCenter
                 notifications={notifications}
                 unreadCount={notificationCount}
@@ -493,17 +454,15 @@ const Header: React.FC<HeaderProps> = ({
               />
             )}
 
-            {/* 장바구니 — 쇼핑몰 모듈이 꺼져 있으면 숨긴다 */}
-            {shopEnabled && (
-              <LinkButton href={`${shopBase}/cart`} onNavigate={() => navigate(`${shopBase}/cart`)} data-testid="header-cart" aria-label={t('nav.cart_with_count', { count: cartCount })} className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer">
-                <Icon name="shopping-cart" className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <Span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center text-xs bg-blue-600 dark:bg-blue-600 text-white rounded-full">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </Span>
-                )}
-              </LinkButton>
-            )}
+            {/* 장바구니 */}
+            <LinkButton href={`${shopBase}/cart`} onNavigate={() => navigate(`${shopBase}/cart`)} aria-label={t('nav.cart_with_count', { count: cartCount })} className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer">
+              <Icon name="shopping-cart" className="w-5 h-5" />
+              {cartCount > 0 && (
+                <Span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center text-xs bg-blue-600 dark:bg-blue-600 text-white rounded-full">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </Span>
+              )}
+            </LinkButton>
 
             {/* 언어 선택 — 헤더 독립 버튼(코어 기능, 비회원 포함 전체 노출). 공간 절약 위해 아이콘+로케일 코드만.
                 언어는 항상 존재(이커머스 무관) → 템플릿 헤더 내장. */}
@@ -565,15 +524,8 @@ const Header: React.FC<HeaderProps> = ({
                 root id 가 컨테이너별로 스코프되도록(SlotContainer 가 id 로 자식 root id 를 고유화) 한다. */}
             <SlotContainer slotId="header_currency" id="header_currency_slot_desktop" className="flex items-center" />
 
-            {/* 사용자 메뉴 — 사용자 정보를 받는 동안에는 회원 단추 모양의 빈 자리(아바타 sm 원 + 이름 막대 + 펼침 표시 자리 — 이름 길이에 따라 받은 뒤 폭이 조금 달라질 수 있다).
-                받는 중을 비회원으로 읽으면 회원에게 로그인·회원가입이 잠깐 보였다(#915) */}
-            {userLoading ? (
-              <Div role="status" aria-label={t('common.loading')} className="flex items-center gap-2 p-2" data-testid="header-user-skeleton">
-                <Span aria-hidden="true" data-skeleton="avatar" className="block w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                <Span aria-hidden="true" data-skeleton="name" className="hidden sm:block h-4 w-20 max-w-32 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                <Span aria-hidden="true" className="block w-4 h-4" />
-              </Div>
-            ) : user?.uuid ? (
+            {/* 사용자 메뉴 */}
+            {user?.uuid ? (
               <Div ref={userMenuRef} className="relative">
                 <Button
                   onClick={() => setShowUserMenu(!showUserMenu)}
@@ -627,19 +579,14 @@ const Header: React.FC<HeaderProps> = ({
                         <Icon name="user" className="inline w-4 h-4 mr-2" />
                         {t('common.mypage')}
                       </LinkButton>
-                      {/* 주문내역·위시리스트 — 쇼핑몰 모듈이 꺼져 있으면 숨긴다 */}
-                      {shopEnabled && (
-                        <>
-                          <LinkButton href="/mypage/orders" onNavigate={() => { navigate('/mypage/orders'); setShowUserMenu(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                            <Icon name="shopping-bag" className="inline w-4 h-4 mr-2" />
-                            {t('mypage.tabs.orders')}
-                          </LinkButton>
-                          <LinkButton href="/mypage/wishlist" onNavigate={() => { navigate('/mypage/wishlist'); setShowUserMenu(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                            <Icon name="heart" className="inline w-4 h-4 mr-2" />
-                            {t('mypage.tabs.wishlist')}
-                          </LinkButton>
-                        </>
-                      )}
+                      <LinkButton href="/mypage/orders" onNavigate={() => { navigate('/mypage/orders'); setShowUserMenu(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        <Icon name="shopping-bag" className="inline w-4 h-4 mr-2" />
+                        {t('mypage.tabs.orders')}
+                      </LinkButton>
+                      <LinkButton href="/mypage/wishlist" onNavigate={() => { navigate('/mypage/wishlist'); setShowUserMenu(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        <Icon name="heart" className="inline w-4 h-4 mr-2" />
+                        {t('mypage.tabs.wishlist')}
+                      </LinkButton>
                     </Div>
 
                     {/* 언어 선택은 헤더 독립 버튼으로 일원화(드롭다운에서 제거) — 비회원도 헤더에서 전환 가능 */}
@@ -657,16 +604,14 @@ const Header: React.FC<HeaderProps> = ({
               </Div>
             ) : (
               <Div className="flex items-center gap-1.5 whitespace-nowrap">
-                {/* 주문조회(쇼핑몰 모듈이 켜져 있을 때만) — 로그인 페이지로 진입. 회원은 로그인 후 redirect 파라미터로 마이페이지 주문 내역으로 이동, 비회원은 로그인 페이지의 '비회원 주문 조회' 링크로 폼 진입. 로그아웃된 회원이 비회원 페이지에서 막다른 길에 빠지는 케이스를 차단한다. */}
-                {shopEnabled && (
-                  <LinkButton
-                    href="/login?redirect=/mypage/orders"
-                    onNavigate={() => navigate('/login?redirect=/mypage/orders')}
-                    className="px-2.5 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
-                  >
-                    {t('shop.guest_order_form.nav_link')}
-                  </LinkButton>
-                )}
+                {/* 주문조회 — 로그인 페이지로 진입. 회원은 로그인 후 redirect 파라미터로 마이페이지 주문 내역으로 이동, 비회원은 로그인 페이지의 '비회원 주문 조회' 링크로 폼 진입. 로그아웃된 회원이 비회원 페이지에서 막다른 길에 빠지는 케이스를 차단한다. */}
+                <LinkButton
+                  href="/login?redirect=/mypage/orders"
+                  onNavigate={() => navigate('/login?redirect=/mypage/orders')}
+                  className="px-2.5 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
+                >
+                  {t('shop.guest_order_form.nav_link')}
+                </LinkButton>
                 <LinkButton
                   href="/login"
                   onNavigate={() => navigate('/login')}
@@ -706,26 +651,14 @@ const Header: React.FC<HeaderProps> = ({
             <LinkButton href="/" onNavigate={() => navigate('/')} className={getNavButtonClass(isActiveRoute('/', true))} data-testid="nav-home" aria-current={isActiveRoute('/', true) ? 'page' : undefined}>
               {t('nav.home')}
             </LinkButton>
-            {/* 인기글 — 게시판 모듈이 꺼져 있으면 숨긴다 */}
-            {boardEnabled && (
-              <LinkButton href="/boards/popular" onNavigate={() => navigate('/boards/popular')} className={`flex items-center gap-1 ${getNavButtonClass(isActiveRoute('/boards/popular'))}`} data-testid="nav-popular" aria-current={isActiveRoute('/boards/popular') ? 'page' : undefined}>
-                <Span className="text-orange-500">🔥</Span>
-                {t('nav.popular')}
-              </LinkButton>
-            )}
-            {/* 쇼핑 — 쇼핑몰 모듈이 꺼져 있으면 숨긴다 */}
-            {shopEnabled && (
-              <LinkButton href={`${shopBase === '/' ? '' : shopBase}/products`} onNavigate={() => navigate(`${shopBase === '/' ? '' : shopBase}/products`)} className={`flex items-center gap-1 ${getNavButtonClass(isShopActive())}`} data-testid="nav-shop" aria-current={isShopActive() ? 'page' : undefined}>
-                <Span>🛒</Span>
-                {t('nav.shop')}
-              </LinkButton>
-            )}
-            {/* 리뷰 모아보기 — 쇼핑몰 모듈이 꺼져 있으면 숨긴다 */}
-            {shopEnabled && (
-              <LinkButton href={`${shopBase === '/' ? '' : shopBase}/reviews`} onNavigate={() => navigate(`${shopBase === '/' ? '' : shopBase}/reviews`)} className={`flex items-center gap-1 ${getNavButtonClass(isReviewsActive())}`} data-testid="nav-reviews" aria-current={isReviewsActive() ? 'page' : undefined}>
-                {t('nav.reviews')}
-              </LinkButton>
-            )}
+            <LinkButton href="/boards/popular" onNavigate={() => navigate('/boards/popular')} className={`flex items-center gap-1 ${getNavButtonClass(isActiveRoute('/boards/popular'))}`} data-testid="nav-popular" aria-current={isActiveRoute('/boards/popular') ? 'page' : undefined}>
+              <Span className="text-orange-500">🔥</Span>
+              {t('nav.popular')}
+            </LinkButton>
+            <LinkButton href={`${shopBase === '/' ? '' : shopBase}/products`} onNavigate={() => navigate(`${shopBase === '/' ? '' : shopBase}/products`)} className={`flex items-center gap-1 ${getNavButtonClass(isShopActive())}`} data-testid="nav-shop" aria-current={isShopActive() ? 'page' : undefined}>
+              <Span>🛒</Span>
+              {t('nav.shop')}
+            </LinkButton>
 
             {/* 게시판 링크 */}
             {/* 게시판 탭은 최대 20rem 에서 이름을 한 줄 … 로 자른다 — 긴 이름 탭 하나가 줄 전체(768px)를 차지했다(#143). */}

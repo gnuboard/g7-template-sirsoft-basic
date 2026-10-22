@@ -57,8 +57,7 @@ describe('A1-④ — 쿠폰 모달 다통화 환산', () => {
   // @effects download_modal_rate_stays_percent
   it('정률(rate) 할인은 % 표시를 유지한다(통화 무관)', () => {
     expect(modalText).toContain("coupon.discount_type === 'rate'");
-    // 소수 끝 0(10.00)이 붙지 않게 숫자로 바꿔 그린다
-    expect(modalText).toContain('{{Number(coupon.discount_value)}}%');
+    expect(modalText).toContain('{{coupon.discount_value}}%');
   });
 
   // @scenario surface=download_modal
@@ -149,66 +148,28 @@ describe('7.1.1 — 쿠폰 받기 확인 창(상품 상세 칩)의 혜택 문구
 describe('7.1.1 — 주문서 상품 줄의 상품 쿠폰 선택칸 1·2', () => {
   const items = readJson('layouts/partials/shop/_checkout_items.json');
   const cases: Array<[string, string]> = [
-    ['선택칸 1', 'item_coupon_1'],
-    ['선택칸 2', 'item_coupon_2'],
+    ['선택칸 1', 'pcoupon'],
+    ['선택칸 2', 'pcoupon2'],
   ];
 
-  /**
-   * 이름으로 Select 노드를 찾는다 — 선택칸은 목록형 드롭다운이라 쿠폰 목록이 `options` 식 하나로 온다.
-   *
-   * @param node 시작 노드
-   * @param name Select 의 name
-   * @returns Select 노드
-   */
-  const findSelect = (node: unknown, name: string): Record<string, any> | undefined => {
-    if (Array.isArray(node)) {
-      for (const child of node) {
-        const hit = findSelect(child, name);
-        if (hit) return hit;
-      }
-      return undefined;
-    }
-    if (!node || typeof node !== 'object') return undefined;
-    const n = node as Record<string, any>;
-    if (n.name === 'Select' && n.props?.name === name) return n;
-    for (const value of Object.values(n)) {
-      const hit = findSelect(value, name);
-      if (hit) return hit;
-    }
-    return undefined;
-  };
-
-  /**
-   * 선택칸의 options 식을 쿠폰 하나로 평가해 그 쿠폰 항목의 라벨을 돌려준다.
-   *
-   * @param name Select 의 name
-   * @param coupon 쿠폰
-   * @returns 그 쿠폰 항목의 라벨
-   */
-  const labelOf = (name: string, coupon: Record<string, unknown>): unknown => {
-    const options = String(findSelect(items, name)?.props?.options ?? '');
-    const out = evaluate(options, {
-      item: { product_option_id: 1, available_coupons: [coupon], disabled_coupon_ids: [] },
-      _local: { checkout: { item_coupons: {} } },
-      _global: USD_GLOBAL,
-    }) as Array<{ value: string; label: string }>;
-    return out.find((o) => o.value === String(coupon.id))?.label;
-  };
-
   for (const [label, name] of cases) {
+    const optionText = findText(items, (t) => t.includes(`${name}.localized_name`) && t.includes('benefit_formatted') && !t.includes(`${name}2.`))!;
+
     // @scenario surface=checkout_product_coupon
     // @effects product_coupon_option_uses_selected_currency
     it(`${label}: USD 로 보는 회원에게 선택 통화 혜택 문구를 보인다`, () => {
-      expect(findSelect(items, name)?.props?.options, `${name} 의 options 식이 없다`).toBeDefined();
+      expect(optionText).toBeDefined();
       const coupon = { id: 7, target_type_short_label: '상품', localized_name: '상품 쿠폰', benefit_formatted: BENEFIT_MAP.KRW, multi_currency_benefit_formatted: BENEFIT_MAP };
-      expect(labelOf(name, coupon)).toBe('[상품] 상품 쿠폰 ($0.75 할인)');
+      const out = evaluate(optionText, { item: { disabled_coupon_ids: [] }, [name]: coupon, _global: USD_GLOBAL });
+      expect(out).toBe('[상품] 상품 쿠폰 ($0.75 할인)');
     });
 
     // @scenario surface=checkout_product_coupon
     // @effects product_coupon_option_falls_back
     it(`${label}: 통화 맵이 없으면 기본 혜택 문구로 폴백한다`, () => {
       const coupon = { id: 7, target_type_short_label: '상품', localized_name: '상품 쿠폰', benefit_formatted: BENEFIT_MAP.KRW };
-      expect(labelOf(name, coupon)).toBe('[상품] 상품 쿠폰 (1,000원 할인)');
+      const out = evaluate(optionText, { item: { disabled_coupon_ids: [] }, [name]: coupon, _global: USD_GLOBAL });
+      expect(out).toBe('[상품] 상품 쿠폰 (1,000원 할인)');
     });
   }
 });

@@ -7,7 +7,7 @@
 회원·비회원 주문상세의 클레임 신청 버튼은 상품 목록 바로 아래에서 환불 빨강·반품 주황·교환 파랑으로 표시한다. 공통 클레임 목록의 탭·페이지는 로컬 상태와 `replaceUrl`을 갱신한 뒤 `claims` 데이터소스만 동기 재조회하여 스크롤을 유지한다. 탭 대기 중에는 스피너와 `aria-disabled`·액션 가드를 함께 사용해 포커스와 중복 클릭 방지를 유지한다. 다른 비동기 신청·저장 버튼은 기존 `Icon` 스피너와 `disabled` 패턴을 따른다.
 
 <!-- @generated:layouts START — ext:docgen 이 갱신. 이 블록 안은 직접 수정하지 않는다 -->
-레이아웃 196개 (루트: `layouts` — 작성 지점은 `.g7.html`, 짝 `.json` 은 `php artisan layout:decompile <경로> --sync` 굽기 산출).
+레이아웃 193개 (루트: `layouts` — 작성 지점은 `.g7.html`, 짝 `.json` 은 `php artisan layout:decompile <경로> --sync` 굽기 산출).
 
 | 그룹 | 개수 |
 |---|---|
@@ -17,9 +17,9 @@
 | `errors` | 6개 |
 | `mypage` | 15개 |
 | `page` | 1개 |
-| `partials` | 146개 |
+| `partials` | 144개 |
 | `search` | 1개 |
-| `shop` | 12개 |
+| `shop` | 11개 |
 | `users` | 2개 |
 
 | 레이아웃 | 그룹 | 종류 | extends |
@@ -179,7 +179,6 @@
 | `_modal_cart_option_change` | `partials` | partial | - |
 | `_modal_cart_unavailable` | `partials` | partial | - |
 | `_modal_coupon_download` | `partials` | partial | - |
-| `_modal_quick_option` | `partials` | partial | - |
 | `_modal_temp_order_not_found` | `partials` | partial | - |
 | `_admin_edit_link` | `partials` | partial | - |
 | `_header` | `partials` | partial | - |
@@ -193,18 +192,17 @@
 | `_modal_review_image` | `partials` | partial | - |
 | `_price_mobile` | `partials` | partial | - |
 | `_purchase_card` | `partials` | partial | - |
-| `_purchase_options` | `partials` | partial | - |
-| `_review_card` | `partials` | partial | - |
+| `_review_avatar` | `partials` | partial | - |
 | `_tab_detail` | `partials` | partial | - |
 | `_tab_qna` | `partials` | partial | - |
 | `_tab_reviews` | `partials` | partial | - |
+| `_category_breadcrumb` | `partials` | partial | - |
+| `_category_filter` | `partials` | partial | - |
 | `_new_products` | `partials` | partial | - |
 | `_popular_products` | `partials` | partial | - |
 | `_product_grid` | `partials` | partial | - |
 | `_recent_products` | `partials` | partial | - |
-| `_related_products` | `partials` | partial | - |
 | `_search_filter_bar` | `partials` | partial | - |
-| `_sort_bar` | `partials` | partial | - |
 | `index` | `search` | 화면 | `_user_base` |
 | `cart` | `shop` | 화면 | `_user_base` |
 | `category` | `shop` | 화면 | `_user_base` |
@@ -216,7 +214,6 @@
 | `index` | `shop` | 화면 | `_user_base` |
 | `order_complete` | `shop` | 화면 | `_user_base` |
 | `reorder` | `shop` | 화면 | `_user_base` |
-| `reviews` | `shop` | 화면 | `_user_base` |
 | `show` | `shop` | 화면 | `_user_base` |
 | `posts` | `users` | 화면 | `_user_base` |
 | `show` | `users` | 화면 | `_user_base` |
@@ -308,7 +305,6 @@
 | `/board/:slug/:id` | `board/show` | - |
 | `/board/:slug/:id/edit` | `board/form` | - |
 | `/{{_global.modules?.['sirsoft-ecommerce']?.basic_info?.no_route ? '' : (_global.modules?.['sirsoft-ecommerce']?.basic_info?.route_path ?? 'shop')}}/products` | `shop/index` | - |
-| `/{{_global.modules?.['sirsoft-ecommerce']?.basic_info?.no_route ? '' : (_global.modules?.['sirsoft-ecommerce']?.basic_info?.route_path ?? 'shop')}}/reviews` | `shop/reviews` | - |
 | `/{{_global.modules?.['sirsoft-ecommerce']?.basic_info?.no_route ? '' : (_global.modules?.['sirsoft-ecommerce']?.basic_info?.route_path ?? 'shop')}}/category/:slug` | `shop/category` | - |
 | `/{{_global.modules?.['sirsoft-ecommerce']?.basic_info?.no_route ? '' : (_global.modules?.['sirsoft-ecommerce']?.basic_info?.route_path ?? 'shop')}}/products/:product_code` | `shop/show` | - |
 | `/{{_global.modules?.['sirsoft-ecommerce']?.basic_info?.no_route ? '' : (_global.modules?.['sirsoft-ecommerce']?.basic_info?.route_path ?? 'shop')}}/cart` | `shop/cart` | - |
@@ -359,13 +355,6 @@
 `/mypage` 자체는 레이아웃이 `-` 입니다 — 진입하면 하위 탭 중 하나로 넘기는 자리이며 자기
 화면을 갖지 않습니다.
 
-본문 편집기 확장점(`html_editor`)에는 게시판 표준 계약 엔드포인트(`GET boards/{slug}/content-media/target`, 데이터소스
-`content_media_target`)가 준 본문 미디어 업로드 계약을 `mediaUpload` 로 넘기고, 계약의 `fields.temp_key` 에 글쓰기 임시 키
-(`_local.tempKey`)를 더합니다(코어 7.1.5, 게시판 1.2.3). 올릴 권한이 없거나 받지 못하면 그 소스는 조용히 `{data: null}` 이 되고 편집기는
-종전 규칙(관리자만 편집기 자체 업로드)으로 동작합니다 — 이 prop 이 없는 복제 템플릿도 같습니다. 편집기는 처음 세워질 때의 계약만 쓰므로
-편집기 노드는 그 소스를 받기(실패 포함) 전에는 서지 않습니다. 예전처럼 폼 메타 `form_meta.data.content_media` 를 읽는 복제 템플릿도
-게시판이 같은 값을 계속 실어 주므로 그대로 동작합니다.
-
 게시글 작성·수정(`board/form` → `_post_form`)의 옵션 카드는 폼 메타의 권한 값으로 갈립니다.
 공지 옵션은 `user_abilities.can_manage`(게시판 관리) **또는** `can_write_notice`(공지 등록) 가
 참일 때만, 답글이 아닐 때만 보입니다 — 서버(게시판 모듈)가 공지 지정을 같은 두 권한으로
@@ -373,16 +362,8 @@
 합니다. 수정 모드의 폼은 서버가 준 기존 값(`is_notice` 포함)을 통째로 되돌려 보내며, 서버는
 값이 바뀔 때만 공지 권한을 판정합니다.
 
-모듈 화면 라우트(게시판 9개·상점 12개·쇼핑 마이페이지 9개·문의 1개·`/page/:slug`)에는
-`"requires": {"modules": [...]}` 가 붙어 있습니다(1.3.0). 코어 7.1.4 이상은 나열한 모듈이 **모두** 활성일 때만
-그 라우트를 공개 라우트 목록·사이트맵·검색봇 렌더·정적 사본에 싣고, 아니면 그 주소는 404 레이아웃이 됩니다.
-옛 코어는 이 키를 무시합니다. 새 모듈 화면을 추가하면 `requires` 를 함께 단다 — 빠뜨리면 모듈이 꺼진 사이트에
-빈 화면 주소가 남습니다(`__tests__/layouts/routes-requires.test.ts`).
-
 라우트를 바꾸면 `php artisan template:update sirsoft-basic --force` 로 반영합니다. 빌드는
 필요 없습니다.
-
-**전체 화면 본인인증의 [다시 보내기] 는 정책·수단을 싣는다**(가입·비밀번호 찾기, 코어 7.1.6~): `auth/identity_challenge` 는 상태 조회(`GET /api/identity/challenges/{id}`) 성공 시 응답의 `provider_id`·`policy_key` 를 `_local.provider_id`·`_local.policy_key` 에 담고, 재전송 요청 본문 2곳(코드 입력형·링크형)에 함께 싣습니다. 코어 7.1.6 은 정책이 지정한 수단으로 받은 인증만 인정하고 정책 키가 있으면 그 수단으로만 발급하므로(다른 수단이면 422), 이 두 값을 빼면 다시 보낸 인증이 기본 수단(메일)으로 발급되어 정책을 통과하지 못합니다. 잠금: `__tests__/layouts/identity-challenge-target-and-policy.test.ts`.
 <!-- @intent END -->
 
 ## 확장 오버라이드
@@ -398,9 +379,6 @@
 있습니다 — `sirsoft-daum_postcode` 의 주소 검색 조각.
 원본과 같이 SDK 스크립트에 `label="$t:sirsoft-daum_postcode.search_address"` 를 선언해, 스크립트를 불러오지 못했을 때
 안내가 스크립트 id 가 아니라 「주소 검색」으로 나오게 합니다 — 원본 조각의 스크립트 선언을 바꾸면 이 오버라이드도 같이 맞춥니다.
-SDK 주소도 원본과 같은 카카오 주소(`t1.kakaocdn.net`)를 쓰고, 원본처럼 PC·모바일 표시 방식(`display_mode_pc`·`display_mode_mobile`)을
-함께 넘긴다(플러그인 1.2.0 · 이 템플릿 1.3.1). 표시 방식이 `inline`(페이지 안에 펼치기, 모바일 기본값)이면 버튼이 있는 「우편번호 칸 + 버튼」 줄 바로 아래에 검색 창을 넣으므로, 주소칸
-마크업에서 그 줄 구조(입력 칸과 확장점이 한 줄)를 바꾸면 펼쳐지는 자리도 함께 바뀐다 — 자리를 고정하려면 묶음에 `data-postcode-anchor` 를 단다.
 
 플러그인이 제공하는 원본 조각은 이커머스 관리자 화면에 맞춰져 있어, 방문자 화면의 배송지 입력
 디자인과 어긋납니다. 조각을 고치는 대신 **템플릿이 자기 버전을 얹는** 것이 이 방향입니다 —
@@ -425,40 +403,6 @@ id 가 사라지면 오류 없이 그 안내들만 빠진다. 같은 조각의 �
 지우거나 바꾸지 않는다. KG이니시스 엔화 결제수단 제한이 이미 그려진 버튼을 숨길 때 이것으로만 찾는다 — 사라지면 오류 없이
 화면 보정만 빠진다(응답을 거르는 앞단 제한은 그대로 동작). 약속 원문: `modules/_bundled/sirsoft-ecommerce/docs/extension-points.md`
 「PG 플러그인이 주문서 결제수단 칸을 볼 때의 약속」.
-
-### 모듈 결합 가드 (1.3.0)
-
-게시판·이커머스·페이지 모듈과 주소 검색 플러그인은 선택 연동(`template.json` 의 `integrations`)이라, 공통 화면은 꺼진 모듈의
-API 를 부르지도, 갈 곳 없는 링크를 그리지도 않는다. 판정은 코어가 싣는 `_global.activeModules`·`_global.activePlugins`
-(식별자 배열, 코어 7.1.4+)이고 식은 **한 모양만** 쓴다.
-
-| 쓰임 | 식 |
-| --- | --- |
-| 켜져 있을 때 | `{{_global.activeModules?.includes('sirsoft-board') ?? true}}` (플러그인은 `activePlugins`) |
-| 꺼져 있을 때 | `{{!(_global.activeModules?.includes('sirsoft-page') ?? true)}}` |
-| 다른 조건과 함께 | 위 식을 괄호로 감싸 잇는다 — `{{… && (_global.activeModules?.includes('sirsoft-board') ?? true)}}` |
-
-`?? true` 덕에 키가 없는 옛 코어에서는 지금처럼 모두 보인다. 공통 화면에서 `/api/modules/<id>/` 를 부르는 데이터소스에는
-`if` 와 함께 404 삼킴을 단다(옛 코어에서는 가드가 늘 참이라 꺼진 모듈로 요청이 나간다).
-
-| 화면(`layouts/` 기준) | 가드한 자리 |
-| --- | --- |
-| `_user_base` | 데이터소스 `boards`(게시판)·`cart`(쇼핑몰) + 404 삼킴 · `current_user` 성공 뒤 통화·배송국가 재해석 액션과 첫 진입 `initCartKey`·통화·배송국가 init(쇼핑몰) · 모바일 장바구니 단추(`mobile_cart_btn`) · 서랍의 주문 내역·위시리스트·비회원 주문 조회·쇼핑 섹션(쇼핑몰), 인기글·게시판 섹션(게시판), 정보·정책 묶음(페이지), 검색칸(셋 중 하나라도) · `Header`·`Footer` 의 모듈 props |
-| `home` | 게시판 데이터소스 4개 + 404 삼킴 · 통계 카드 줄·최근 글·인기 게시판·커뮤니티 안내·게시판 요약(게시판) · 쇼핑 안내 카드와 「인기 상품」「신상품」 섹션(쇼핑몰, 데이터소스는 401·403·404 삼킴) · 환영 카드 「자세히」(페이지) |
-| `search/index` + `partials/search/*` | 글·상품·문서 탭과 전체 탭 섹션, 게시판 필터·상품 정렬. 검색 결과 데이터소스는 엔진이 읽는 `if="{{query?.q}}"` 로 검색어 유무를 가른다(종전 `condition` 키는 엔진이 읽지 않았다) |
-| `auth/register` + `partials/auth/_register_form` | 약관·방침 본문 데이터소스와 「보기」 단추(페이지) — 꺼지면 같은 글을 일반 글자로 보이고 동의 체크박스는 그대로 |
-| `auth/login` | 비회원 결제·비회원 주문 조회 안내(쇼핑몰) |
-| `partials/mypage/_tab_navigation` | 게시글·스크랩(게시판), 주문·클레임·위시리스트·배송지·적립금(쇼핑몰), 문의(둘 다) |
-| `users/show` | 글 통계·최근 글 데이터소스 + 404 삼킴과 그 블록(게시판) |
-| `shop/show` + `partials/shop/detail/_tab_qna` | 문의 탭·문의 데이터소스는 문의 게시판 설정과 함께 게시판 활성도 본다 |
-| 주소칸 4곳(`partials/mypage/profile/_edit` · `partials/mypage/addresses/_modal_address` · `partials/mypage/orders/_modal_change_address` · `partials/shop/_modal_address_manage`) | 우편번호·주소 칸 `readOnly="{{_global.activePlugins?.includes('sirsoft-daum_postcode') ?? true}}"` — 플러그인이 꺼지면 직접 입력. 상태 경로로 옮기는 change 액션을 함께 둔다(프로필은 폼 자동 바인딩) |
-
-`seo-config.json` 의 머리글·꼬리말 링크 조건은 늘 값이 있는 prop 을 대체로 붙인다 — 머리글 `"if": "{boardEnabled|maxVisibleBoards}"`,
-꼬리말 `"if": "{pageEnabled|copyrightText}"`. props 가 `false` 면 빈 값이라 숨고, keep 으로 남은 옛 `_user_base` 처럼 props 가 없으면
-대체 prop 으로 넘어가 보인다(사이트명은 빈 값일 수 있어 대체로 쓰지 않는다). 상점 링크 `href` 는 `"{shopProductsHref}"` — Header 노드가
-`shopProductsHref="{{_global.shopBase ?? '/shop'}}/products"` 로 완성된 주소를 넘긴다. 옛 코어(7.1.3 이하)의 봇 렌더는
-`{shopBase}/products` 같은 섞인 attrs 패턴을 치환하지 못해 중괄호째 내보내기 때문이다. keep 된 옛 `_user_base` 에는 이 prop 이 없어
-봇 화면의 「쇼핑」 링크가 주소 없이 글자만 남는다(사람 화면은 영향 없음).
 
 ### 게시판 확장 자리 (1.2.1+)
 
@@ -609,11 +553,10 @@ _user_base.g7.html (베이스 레이아웃)
 │   │       ├── _popular_products.g7.html (인기 상품)
 │   │       ├── _new_products.g7.html (신상품)
 │   │       ├── _recent_products.g7.html (최근 본 상품)
-│   │       ├── _related_products.g7.html (관련 상품 가로 줄)
-│   │       ├── _sort_bar.g7.html (정렬 줄 — 목록·분류 공용)
+│   │       ├── _category_filter.g7.html (카테고리 필터)
+│   │       ├── _category_breadcrumb.g7.html (카테고리 경로)
 │   │       └── _search_filter_bar.g7.html (검색/필터 바)
 │   ├── category.g7.html (카테고리 상품)
-│   ├── reviews.g7.html (리뷰 모아보기 — 전체 상품 후기, 조건은 주소 쿼리)
 │   ├── show.g7.html (상품 상세)
 │   │   └── partials/shop/detail/
 │   │       ├── _header.g7.html (상품 헤더)
@@ -623,8 +566,7 @@ _user_base.g7.html (베이스 레이아웃)
 │   │       ├── _tab_detail.g7.html (상세 탭)
 │   │       ├── _tab_reviews.g7.html (리뷰 탭)
 │   │       ├── _tab_qna.g7.html (Q&A 탭)
-│   │       ├── _review_card.g7.html (후기 카드 — 리뷰 탭·리뷰 모아보기 공용)
-│   │       ├── _purchase_options.g7.html (구매 옵션 — 구매 카드·바텀시트 공용)
+│   │       ├── _review_avatar.g7.html (리뷰 아바타)
 │   │       ├── _modal_cart_added.g7.html (장바구니 추가 확인)
 │   │       ├── _modal_coupon_download_confirm.g7.html (쿠폰 다운로드 확인)
 │   │       ├── _modal_login_required.g7.html (로그인 필요)
@@ -640,7 +582,6 @@ _user_base.g7.html (베이스 레이아웃)
 │   │       ├── _cart_summary.g7.html (장바구니 요약)
 │   │       ├── _modal_cart_delete_confirm.g7.html (삭제 확인)
 │   │       ├── _modal_cart_option_change.g7.html (옵션 변경)
-│   │       ├── _modal_quick_option.g7.html (상품 카드 옵션 선택 창 — 바탕 레이아웃이 선언, 목록 화면 공용)
 │   │       ├── _modal_cart_unavailable.g7.html (품절 안내)
 │   │       └── _modal_temp_order_not_found.g7.html (임시주문 없음)
 │   ├── checkout.g7.html (결제)
@@ -802,7 +743,10 @@ slots.content:
 
 **특수사항**:
 - `_redirect_if_logged_in.g7.html`: 이미 로그인한 사용자를 홈으로 리다이렉트하는 partial
-- 로그인 폼은 `SocialLoginButtons` 포함 (소셜 로그인 지원)
+- 로그인 화면은 폼 아래에 확장점 `auth_login_extensions`, 회원가입 화면은 폼 위에 `auth_register_extensions` 를 둔다 — 소셜 로그인 버튼처럼 다른 로그인·가입 수단은 확장이 이 자리에 붙인다(템플릿은 소셜 로그인 부품을 갖지 않는다)
+- 마이페이지 정보 수정의 본인 확인 칸(`_password_verify_section`)과 비밀번호 변경 화면은 메일을 받을 수 없는 비밀번호 없는 회원(`has_password === false` · `email_deliverable === false` — 대체 이메일로 가입)에게 인증번호 대신 확장점 `mypage_reauth_methods`·`mypage_change_password_reauth` 를 보인다. 기본 내용은 관리자 문의 안내이고, 다른 확인 수단(예: 소셜 재로그인)을 가진 확장이 `mode="replace"` 로 바꾼다
+- 같은 본인 확인 칸의 제목과 안내는 비밀번호 없는 회원(`has_password === false`)에게 「본인 확인 / 내 정보를 수정하려면 본인 확인이 필요합니다」(`mypage.profile.verify_identity_*`), 비밀번호가 있는 회원에게 「비밀번호 확인」으로 갈린다
+- 로그인 화면은 `?login_handoff={코드}` 로 들어오면 진입 시 코드를 교환한다(`loginHandoff`) — 외부 인증 확장이 본인 확인을 마친 회원을 넘기는 통로이며, 응답 분기(2단계 인증·비밀번호 변경·로그인 완료)는 비밀번호 로그인과 같은 명명 액션 `applyLoginResult` 를 쓴다
 - 회원가입 폼은 `PasswordInput` 사용 (비밀번호 규칙 검증, 확인 일치)
 - 약관 동의 모달: `_modal_terms.g7.html`, `_modal_privacy.g7.html`
 - `blur_until_loaded`: 현재 사용자 정보 로드 전까지 폼 블러 처리
@@ -982,8 +926,9 @@ extends: _user_base
 data_sources: [products (상품 API), categories (카테고리)]
 slots.content:
   └── Container
+      ├── _category_breadcrumb.g7.html (경로)
       ├── _search_filter_bar.g7.html (검색/정렬)
-      ├── _sort_bar.g7.html (정렬 줄)
+      ├── _category_filter.g7.html (카테고리 사이드)
       ├── _product_grid.g7.html (상품 그리드, ProductCard iteration)
       ├── _popular_products.g7.html (인기 상품)
       ├── _new_products.g7.html (신상품)
@@ -1014,9 +959,6 @@ slots.content:
 **SEO 특수사항**:
 - `meta.seo.structured_data`: Product, AggregateRating 스키마
 - `meta.seo.og`: 상품 이미지, 가격 정보 포함
-- `meta.seo.vars`·`og` 의 제목·설명 식은 `$localized(meta_title) || $localized(name) || ''` 처럼 `||` 로 잇는다 — 화면 `$localized` 는
-  빈 값을 빈 글자로 돌려줘 `??` 로 이으면 다음 후보로 넘어가지 않는다. 그러면 상품 고유 검색 제목이 없는 상품의 방문자 탭 제목에서
-  상품명이 빠지고 틀의 고정 글자만 남는다(봇 `<title>` 은 정상이라 눈에 덜 띈다). 이 식은 서버 평가기와 화면 엔진이 함께 평가한다
 
 **핸들러 패턴**:
 - `sirsoft-basic.addSelectedItemIfComplete` — 옵션 선택 완료 시 자동 추가
@@ -1173,7 +1115,6 @@ slots.content:
 - `searchActiveTab`으로 탭 전환 시 해당 카테고리만 표시
 - 상품 결과는 카드/리스트 뷰 전환 지원
 - `global_state`로 검색 상태 유지 (탭, 필터, 정렬, 페이지)
-- 최근 검색어 범위: 통합검색·머리글·모바일 서랍 검색칸은 `core.site`, 상품 목록·분류 검색줄은 `sirsoft-ecommerce.products`, 게시판 목록 세 유형 검색칸은 `sirsoft-board.posts` 를 `RecentSearchCombobox` 의 `scope` 로 건넨다. 목록 화면 검색칸은 `submitEmpty` 로 빈 제출이 검색어 조건을 푼다(종전 동작)
 
 **핸들러 패턴**:
 - `apiCall` — 검색 API (게시글, 상품, 페이지 별도)
@@ -1215,28 +1156,21 @@ slots.content:
 
 ```text
 extends: _user_base
-data_sources: [stats, recent_posts, popular_boards, home_boards (게시판 가드), popularProducts, newProducts (쇼핑몰 가드), visitor_summary]
+data_sources: [stats, recent_posts, popular_boards]
 meta.seo: { structured_data: WebSite }
 slots.content:
   └── Container
-      ├── Grid home_top_row (게시판이 꺼지면 쇼핑몰 켜짐: 환영 2칸 + 쇼핑 홍보 1칸 / 둘 다 꺼짐: 1열)
-      │   ├── _welcome_card.g7.html (환영 배너 — 「자세히」는 페이지 가드)
-      │   ├── home_top_shop_promo → _shop_promo.g7.html (게시판 꺼짐 + 쇼핑몰 켜짐일 때만)
-      │   └── home_stat_cards (게시판 가드)
-      │       ├── _stat_card_users.g7.html
-      │       ├── _stat_card_posts.g7.html
-      │       ├── _stat_card_comments.g7.html
-      │       └── _stat_card_boards.g7.html
-      ├── Grid home_feature_row (게시판 가드)
-      │   ├── _recent_posts.g7.html (최근 게시글 — 게시판 가드)
-      │   ├── _popular_boards.g7.html (인기 게시판 — 게시판 가드)
-      │   ├── _shop_promo.g7.html (쇼핑 프로모션 — 쇼핑몰 가드)
-      │   └── _community_guide.g7.html (가이드 — 게시판 가드)
-      ├── home_board_summaries → _board_summary.g7.html (게시판 요약 — 게시판 가드)
-      ├── home_shop_sections (쇼핑몰 가드, 1.3.0)
-      │   ├── partials/shop/list/_popular_products.g7.html (인기 상품 8개)
-      │   └── partials/shop/list/_new_products.g7.html (신상품 8개)
-      └── _visitor_counter.g7.html (방문자 수 — 설정으로 켬)
+      ├── _welcome_card.g7.html (환영 배너)
+      ├── Grid (통계 카드 4개)
+      │   ├── _stat_card_users.g7.html
+      │   ├── _stat_card_posts.g7.html
+      │   ├── _stat_card_comments.g7.html
+      │   └── _stat_card_boards.g7.html
+      ├── _recent_posts.g7.html (최근 게시글)
+      ├── _popular_boards.g7.html (인기 게시판)
+      ├── _board_summary.g7.html (게시판 요약)
+      ├── _community_guide.g7.html (가이드)
+      └── _shop_promo.g7.html (쇼핑 프로모션)
 ```
 
 ---

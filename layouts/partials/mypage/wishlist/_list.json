@@ -95,8 +95,7 @@
                                     "name": "ProductCard",
                                     "props": {
                                         "product": "{{item.product}}",
-                                        "shopBase": "{{_global.shopBase ?? '/shop'}}",
-                                        "showActions": false
+                                        "shopBase": "{{_global.shopBase ?? '/shop'}}"
                                     }
                                 },
                                 {
